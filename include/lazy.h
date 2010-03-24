@@ -27,6 +27,8 @@
 #include <stdint.h>
 
 typedef struct lazy_object_s * lz_obj;
+typedef struct lazy_database_s * lz_db;
+typedef struct lazy_root_s *lz_root;
 
 #pragma mark -
 #pragma mark Logging
@@ -68,6 +70,11 @@ void lz_obj_release(lz_obj obj);
 int lz_obj_rc(lz_obj obj);
 
 #pragma mark -
+#pragma mark Check Same Object
+
+int lz_obj_same(lz_obj obj1, lz_obj obj2);
+
+#pragma mark -
 #pragma mark Access Object Payload
 
 void lz_obj_sync(lz_obj, void(^)(void * data, uint32_t length));
@@ -81,6 +88,33 @@ uint16_t lz_obj_num_ref(lz_obj obj);
 lz_obj lz_obj_weak_ref(lz_obj obj, uint16_t pos);
 lz_obj lz_obj_ref(lz_obj obj, uint16_t pos);
 
+#pragma mark -
+#pragma mark Database Livecycle
+
+lz_db lz_db_open(const char * path);
+
+void lz_db_retain(lz_db db);
+void lz_db_release(lz_db db);
+
+#pragma mark -
+#pragma mark Access Root Handle
+
+lz_root lz_db_root(lz_db db, const char * name);
+
+#pragma mark -
+#pragma mark Root Handle Livecycle
+
+void lz_root_retain(lz_root root);
+void lz_root_release(lz_root root);
+
+#pragma mark -
+#pragma mark Root Objects
+
+lz_obj lz_root_get(lz_root root);
+void lz_root_set(lz_root root, lz_obj obj);
+void lz_root_del(lz_root);
 
 #endif // _LAZY_H_
+
+
 

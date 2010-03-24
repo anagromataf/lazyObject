@@ -17,6 +17,11 @@
 		F6B081FD1157B716009B2F72 /* lazy_logging_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F6B081FB1157B716009B2F72 /* lazy_logging_impl.c */; };
 		F6B082091157BA6F009B2F72 /* lazy_object_dispatch_group.h in Headers */ = {isa = PBXBuildFile; fileRef = F6B082071157BA6F009B2F72 /* lazy_object_dispatch_group.h */; };
 		F6B0820A1157BA6F009B2F72 /* lazy_object_dispatch_group.c in Sources */ = {isa = PBXBuildFile; fileRef = F6B082081157BA6F009B2F72 /* lazy_object_dispatch_group.c */; };
+		F6CECA20115A3F8500827BAB /* lazy_database_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CECA1E115A3F8500827BAB /* lazy_database_impl.h */; };
+		F6CECA21115A3F8500827BAB /* lazy_database_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F6CECA1F115A3F8500827BAB /* lazy_database_impl.c */; };
+		F6CECA46115A416700827BAB /* lazy_root_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CECA44115A416700827BAB /* lazy_root_impl.h */; };
+		F6CECA47115A416700827BAB /* lazy_root_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F6CECA45115A416700827BAB /* lazy_root_impl.c */; };
+		F6CECA64115A44D800827BAB /* test_root_handle.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CECA63115A44D800827BAB /* test_root_handle.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +51,11 @@
 		F6B082411157BD42009B2F72 /* test_use_async.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_use_async.h; path = test/test_use_async.h; sourceTree = "<group>"; };
 		F6CEC9BF115A21EA00827BAB /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		F6CEC9D1115A235E00827BAB /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
+		F6CECA1E115A3F8500827BAB /* lazy_database_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_database_impl.h; path = lazy/lazy_database_impl.h; sourceTree = "<group>"; };
+		F6CECA1F115A3F8500827BAB /* lazy_database_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_database_impl.c; path = lazy/lazy_database_impl.c; sourceTree = "<group>"; };
+		F6CECA44115A416700827BAB /* lazy_root_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_root_impl.h; path = lazy/lazy_root_impl.h; sourceTree = "<group>"; };
+		F6CECA45115A416700827BAB /* lazy_root_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_root_impl.c; path = lazy/lazy_root_impl.c; sourceTree = "<group>"; };
+		F6CECA63115A44D800827BAB /* test_root_handle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_root_handle.h; path = test/test_root_handle.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +117,10 @@
 				F6B082081157BA6F009B2F72 /* lazy_object_dispatch_group.c */,
 				F64B31E11153B8E8009EF103 /* lazy_object_impl.h */,
 				F64B31E01153B8E8009EF103 /* lazy_object_impl.c */,
+				F6CECA1E115A3F8500827BAB /* lazy_database_impl.h */,
+				F6CECA1F115A3F8500827BAB /* lazy_database_impl.c */,
+				F6CECA44115A416700827BAB /* lazy_root_impl.h */,
+				F6CECA45115A416700827BAB /* lazy_root_impl.c */,
 			);
 			name = "Lib Lazy";
 			sourceTree = "<group>";
@@ -118,6 +132,7 @@
 				F6B0823D1157BCD5009B2F72 /* test_create_lazy_object.h */,
 				F6B0823F1157BD1C009B2F72 /* test_create_lazy_object_list.h */,
 				F6B082411157BD42009B2F72 /* test_use_async.h */,
+				F6CECA63115A44D800827BAB /* test_root_handle.h */,
 			);
 			name = Tests;
 			sourceTree = "<group>";
@@ -142,6 +157,9 @@
 				F6B081F91157B6B6009B2F72 /* lazy.h in Headers */,
 				F6B081FC1157B716009B2F72 /* lazy_logging_impl.h in Headers */,
 				F6B082091157BA6F009B2F72 /* lazy_object_dispatch_group.h in Headers */,
+				F6CECA20115A3F8500827BAB /* lazy_database_impl.h in Headers */,
+				F6CECA46115A416700827BAB /* lazy_root_impl.h in Headers */,
+				F6CECA64115A44D800827BAB /* test_root_handle.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,6 +229,8 @@
 				F64B31E21153B8E8009EF103 /* lazy_object_impl.c in Sources */,
 				F6B081FD1157B716009B2F72 /* lazy_logging_impl.c in Sources */,
 				F6B0820A1157BA6F009B2F72 /* lazy_object_dispatch_group.c in Sources */,
+				F6CECA21115A3F8500827BAB /* lazy_database_impl.c in Sources */,
+				F6CECA47115A416700827BAB /* lazy_root_impl.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

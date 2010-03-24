@@ -28,7 +28,7 @@
 #include <stdarg.h>
 
 #pragma mark -
-#pragma mark Object Handling
+#pragma mark Object Livecycle
 
 lz_obj lz_obj_new(void * data,
               uint32_t length,
@@ -111,6 +111,20 @@ int lz_obj_rc(lz_obj obj) {
     return rc;
 }
 
+#pragma mark -
+#pragma mark Access Object References
+
+int lz_obj_same(lz_obj obj1, lz_obj obj2) {
+    if (obj1 == obj2) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+#pragma mark -
+#pragma mark Access Object Payload
+
 uint16_t lz_obj_num_ref(lz_obj obj) {
     return obj->_number_of_references;
 }
@@ -121,18 +135,6 @@ lz_obj lz_obj_ref(lz_obj obj, uint16_t pos) {
         lz_obj_retain(result);
     }
     return result;
-}
-
-void lz_obj_sync(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
-    DBG("<%i> Applying synchronous 'payload block'.", obj);
-    handle(obj->_data, obj->_length);
-}
-
-void lz_obj_async(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), obj->_obj_queue, ^{
-        DBG("<%i> Applying asynchronous 'payload function'.", obj);
-        handle(obj->_data, obj->_length);
-    });
 }
 
 lz_obj lz_obj_weak_ref(lz_obj obj, uint16_t pos) {
@@ -148,5 +150,20 @@ lz_obj lz_obj_weak_ref(lz_obj obj, uint16_t pos) {
         DBG("<%i> Index error. (number of references: %i; requested position: %i)", obj, obj->_number_of_references, pos);
         return 0;
     }
+}
+
+#pragma mark -
+#pragma mark Check Same Object
+
+void lz_obj_sync(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
+    DBG("<%i> Applying synchronous 'payload block'.", obj);
+    handle(obj->_data, obj->_length);
+}
+
+void lz_obj_async(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
+    dispatch_group_async(*lazy_object_get_dispatch_group(), obj->_obj_queue, ^{
+        DBG("<%i> Applying asynchronous 'payload function'.", obj);
+        handle(obj->_data, obj->_length);
+    });
 }
 
