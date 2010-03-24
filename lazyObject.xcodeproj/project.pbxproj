@@ -1,0 +1,370 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F63FD9731153C2B0004F38F5 /* liblazyObject.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAC0630554660B00DB518D /* liblazyObject.dylib */; };
+		F63FD9751153C2C7004F38F5 /* libcheck.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F63FD9741153C2C7004F38F5 /* libcheck.dylib */; };
+		F63FD9771153C2E3004F38F5 /* check_lazy_object.c in Sources */ = {isa = PBXBuildFile; fileRef = F64B31F71153C1E9009EF103 /* check_lazy_object.c */; };
+		F64B31E21153B8E8009EF103 /* lazy_object_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F64B31E01153B8E8009EF103 /* lazy_object_impl.c */; };
+		F64B31E31153B8E8009EF103 /* lazy_object_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F64B31E11153B8E8009EF103 /* lazy_object_impl.h */; };
+		F6B081F91157B6B6009B2F72 /* lazy.h in Headers */ = {isa = PBXBuildFile; fileRef = F6B081F81157B6B6009B2F72 /* lazy.h */; };
+		F6B081FC1157B716009B2F72 /* lazy_logging_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F6B081FA1157B716009B2F72 /* lazy_logging_impl.h */; };
+		F6B081FD1157B716009B2F72 /* lazy_logging_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F6B081FB1157B716009B2F72 /* lazy_logging_impl.c */; };
+		F6B082091157BA6F009B2F72 /* lazy_object_dispatch_group.h in Headers */ = {isa = PBXBuildFile; fileRef = F6B082071157BA6F009B2F72 /* lazy_object_dispatch_group.h */; };
+		F6B0820A1157BA6F009B2F72 /* lazy_object_dispatch_group.c in Sources */ = {isa = PBXBuildFile; fileRef = F6B082081157BA6F009B2F72 /* lazy_object_dispatch_group.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F63FD9711153C2AC004F38F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC0620554660B00DB518D;
+			remoteInfo = lazyObject;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D2AAC0630554660B00DB518D /* liblazyObject.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblazyObject.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F63FD96D1153C2A6004F38F5 /* check_lazy_object */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = check_lazy_object; sourceTree = BUILT_PRODUCTS_DIR; };
+		F63FD9741153C2C7004F38F5 /* libcheck.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcheck.dylib; path = /opt/local/lib/libcheck.dylib; sourceTree = "<absolute>"; };
+		F64B31E01153B8E8009EF103 /* lazy_object_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_object_impl.c; path = lazy/lazy_object_impl.c; sourceTree = "<group>"; };
+		F64B31E11153B8E8009EF103 /* lazy_object_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_object_impl.h; path = lazy/lazy_object_impl.h; sourceTree = "<group>"; };
+		F64B31F71153C1E9009EF103 /* check_lazy_object.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = check_lazy_object.c; path = test/check_lazy_object.c; sourceTree = "<group>"; };
+		F6B081F81157B6B6009B2F72 /* lazy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy.h; path = include/lazy.h; sourceTree = "<group>"; };
+		F6B081FA1157B716009B2F72 /* lazy_logging_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_logging_impl.h; path = lazy/lazy_logging_impl.h; sourceTree = "<group>"; };
+		F6B081FB1157B716009B2F72 /* lazy_logging_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_logging_impl.c; path = lazy/lazy_logging_impl.c; sourceTree = "<group>"; };
+		F6B082071157BA6F009B2F72 /* lazy_object_dispatch_group.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_object_dispatch_group.h; path = lazy/lazy_object_dispatch_group.h; sourceTree = "<group>"; };
+		F6B082081157BA6F009B2F72 /* lazy_object_dispatch_group.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_object_dispatch_group.c; path = lazy/lazy_object_dispatch_group.c; sourceTree = "<group>"; };
+		F6B0823D1157BCD5009B2F72 /* test_create_lazy_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_create_lazy_object.h; path = test/test_create_lazy_object.h; sourceTree = "<group>"; };
+		F6B0823F1157BD1C009B2F72 /* test_create_lazy_object_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_create_lazy_object_list.h; path = test/test_create_lazy_object_list.h; sourceTree = "<group>"; };
+		F6B082411157BD42009B2F72 /* test_use_async.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_use_async.h; path = test/test_use_async.h; sourceTree = "<group>"; };
+		F6CEC9BF115A21EA00827BAB /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
+		F6CEC9D1115A235E00827BAB /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D289988505E68E00004EDB86 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F63FD96B1153C2A6004F38F5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F63FD9731153C2B0004F38F5 /* liblazyObject.dylib in Frameworks */,
+				F63FD9751153C2C7004F38F5 /* libcheck.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* lazyObject */ = {
+			isa = PBXGroup;
+			children = (
+				F64B31D81153B825009EF103 /* API */,
+				F64B31DF1153B8D1009EF103 /* Lib Lazy */,
+				F64B31EA1153C1AD009EF103 /* Tests */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+				F6CEC9B3115A21B400827BAB /* Resources */,
+				F63FD9741153C2C7004F38F5 /* libcheck.dylib */,
+			);
+			name = lazyObject;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAC0630554660B00DB518D /* liblazyObject.dylib */,
+				F63FD96D1153C2A6004F38F5 /* check_lazy_object */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F64B31D81153B825009EF103 /* API */ = {
+			isa = PBXGroup;
+			children = (
+				F6B081F81157B6B6009B2F72 /* lazy.h */,
+			);
+			name = API;
+			sourceTree = "<group>";
+		};
+		F64B31DF1153B8D1009EF103 /* Lib Lazy */ = {
+			isa = PBXGroup;
+			children = (
+				F6B081FA1157B716009B2F72 /* lazy_logging_impl.h */,
+				F6B081FB1157B716009B2F72 /* lazy_logging_impl.c */,
+				F6B082071157BA6F009B2F72 /* lazy_object_dispatch_group.h */,
+				F6B082081157BA6F009B2F72 /* lazy_object_dispatch_group.c */,
+				F64B31E11153B8E8009EF103 /* lazy_object_impl.h */,
+				F64B31E01153B8E8009EF103 /* lazy_object_impl.c */,
+			);
+			name = "Lib Lazy";
+			sourceTree = "<group>";
+		};
+		F64B31EA1153C1AD009EF103 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				F64B31F71153C1E9009EF103 /* check_lazy_object.c */,
+				F6B0823D1157BCD5009B2F72 /* test_create_lazy_object.h */,
+				F6B0823F1157BD1C009B2F72 /* test_create_lazy_object_list.h */,
+				F6B082411157BD42009B2F72 /* test_use_async.h */,
+			);
+			name = Tests;
+			sourceTree = "<group>";
+		};
+		F6CEC9B3115A21B400827BAB /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F6CEC9BF115A21EA00827BAB /* COPYING */,
+				F6CEC9D1115A235E00827BAB /* AUTHORS */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D2AAC0600554660B00DB518D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F64B31E31153B8E8009EF103 /* lazy_object_impl.h in Headers */,
+				F6B081F91157B6B6009B2F72 /* lazy.h in Headers */,
+				F6B081FC1157B716009B2F72 /* lazy_logging_impl.h in Headers */,
+				F6B082091157BA6F009B2F72 /* lazy_object_dispatch_group.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D2AAC0620554660B00DB518D /* lazyObject */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB914A08733D8E0010E9CD /* Build configuration list for PBXNativeTarget "lazyObject" */;
+			buildPhases = (
+				D2AAC0600554660B00DB518D /* Headers */,
+				D2AAC0610554660B00DB518D /* Sources */,
+				D289988505E68E00004EDB86 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = lazyObject;
+			productName = lazyObject;
+			productReference = D2AAC0630554660B00DB518D /* liblazyObject.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		F63FD96C1153C2A6004F38F5 /* check_lazy_object */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F63FD9761153C2C7004F38F5 /* Build configuration list for PBXNativeTarget "check_lazy_object" */;
+			buildPhases = (
+				F63FD96A1153C2A6004F38F5 /* Sources */,
+				F63FD96B1153C2A6004F38F5 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F63FD9721153C2AC004F38F5 /* PBXTargetDependency */,
+			);
+			name = check_lazy_object;
+			productName = check_lazy_object;
+			productReference = F63FD96D1153C2A6004F38F5 /* check_lazy_object */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "Fraunhofer Institut für Software und Systemtechnik ISST";
+			};
+			buildConfigurationList = 1DEB914E08733D8E0010E9CD /* Build configuration list for PBXProject "lazyObject" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* lazyObject */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D2AAC0620554660B00DB518D /* lazyObject */,
+				F63FD96C1153C2A6004F38F5 /* check_lazy_object */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2AAC0610554660B00DB518D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F64B31E21153B8E8009EF103 /* lazy_object_impl.c in Sources */,
+				F6B081FD1157B716009B2F72 /* lazy_logging_impl.c in Sources */,
+				F6B0820A1157BA6F009B2F72 /* lazy_object_dispatch_group.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F63FD96A1153C2A6004F38F5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F63FD9771153C2E3004F38F5 /* check_lazy_object.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F63FD9721153C2AC004F38F5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2AAC0620554660B00DB518D /* lazyObject */;
+			targetProxy = F63FD9711153C2AC004F38F5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB914B08733D8E0010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = lazyObject;
+			};
+			name = Debug;
+		};
+		1DEB914C08733D8E0010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_PREFIX = lib;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = lazyObject;
+			};
+			name = Release;
+		};
+		1DEB914F08733D8E0010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${SOURCE_ROOT}/include",
+					/opt/local/include/,
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		1DEB915008733D8E0010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${SOURCE_ROOT}/include",
+					/opt/local/include/,
+				);
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+		F63FD96F1153C2A7004F38F5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/local/lib,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = check_lazy_object;
+			};
+			name = Debug;
+		};
+		F63FD9701153C2A7004F38F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/local/lib,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = check_lazy_object;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB914A08733D8E0010E9CD /* Build configuration list for PBXNativeTarget "lazyObject" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB914B08733D8E0010E9CD /* Debug */,
+				1DEB914C08733D8E0010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB914E08733D8E0010E9CD /* Build configuration list for PBXProject "lazyObject" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB914F08733D8E0010E9CD /* Debug */,
+				1DEB915008733D8E0010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F63FD9761153C2C7004F38F5 /* Build configuration list for PBXNativeTarget "check_lazy_object" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F63FD96F1153C2A7004F38F5 /* Debug */,
+				F63FD9701153C2A7004F38F5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
