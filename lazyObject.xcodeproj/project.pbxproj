@@ -56,6 +56,7 @@
 		F6CECA44115A416700827BAB /* lazy_root_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_root_impl.h; path = lazy/lazy_root_impl.h; sourceTree = "<group>"; };
 		F6CECA45115A416700827BAB /* lazy_root_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_root_impl.c; path = lazy/lazy_root_impl.c; sourceTree = "<group>"; };
 		F6CECA63115A44D800827BAB /* test_root_handle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_root_handle.h; path = test/test_root_handle.h; sourceTree = "<group>"; };
+		F6CECB4D115A571500827BAB /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,6 +143,7 @@
 			children = (
 				F6CEC9BF115A21EA00827BAB /* COPYING */,
 				F6CEC9D1115A235E00827BAB /* AUTHORS */,
+				F6CECB4D115A571500827BAB /* README.markdown */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
