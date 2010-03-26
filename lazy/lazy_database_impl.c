@@ -26,16 +26,86 @@
 #include "lazy_object_dispatch_group.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/param.h>
+#include <sys/stat.h>
 
 #pragma mark -
 #pragma mark Database Livecycle
 
 lz_db lz_db_open(const char * path) {
+    
+    char msg[1024];
+    char filename[MAXPATHLEN];
+    int version;
+    int exsits = 0;
+    FILE * fd;
+    
+    // read version
+    snprintf(filename, MAXPATHLEN, "%s/version", path);
+    fd = fopen(filename, "r");
+    if (fd) {
+        exsits = 1;
+        fscanf(fd, "%d", &version);
+        fclose(fd);
+        INFO("Database with version %d exsists.", version);
+    } else {
+        switch (errno) {
+            case ENOENT:
+                exsits = 0;
+                break;
+            default:
+                strerror_r(errno, msg, 1024);
+                ERR("Could not read version of database '%s': %s", path, msg);
+                return 0;
+        }
+    }
+    
+    // create a database structure
+    if (!exsits) {
+        INFO("Database does not exsist. Setting up default structure for version 1.");
+        
+        // create database folder
+        if (mkdir(path, S_IRWXU)) {
+            strerror_r(errno, msg, 1024);
+            char cwd[1024];
+            getcwd(cwd, 1024);
+            ERR("Could not create folder for database '%s' in '%s': %s", path, cwd, msg);
+            return 0;
+        }
+        
+        // create version info
+        FILE * fd = fopen(filename, "w+");
+        if (fd) {
+            fprintf(fd, "1");
+            fclose(fd);
+        } else {
+            strerror_r(errno, msg, 1024);
+            ERR("Could not create version info for database '%s': %s", path, msg);
+            return 0;
+        }
+        
+        // create chunks folder
+        snprintf(filename, MAXPATHLEN, "%s/chunks", path);
+        if (mkdir(filename, S_IRWXU)) {
+            strerror_r(errno, msg, 1024);
+            ERR("Could not create chunk folder for database '%s': %s", path, msg);
+            return 0;
+        }
+    }
+    
+    // create handle
     struct lazy_database_s * db = malloc(sizeof(struct lazy_database_s));
     if (db) {
-        db->_db_queue = dispatch_queue_create(NULL, NULL);
-        db->_retain_count = 1;
+        db->db_queue = dispatch_queue_create(NULL, NULL);
+        db->retain_count = 1;
+        
+        db->version = version;
+        strcpy(db->db_path, path);
+        
         DBG("<%i> New database handle created.", db);
     } else {
         ERR("Could not allocate memory to create a new database handle.");
@@ -44,23 +114,23 @@ lz_db lz_db_open(const char * path) {
 }
 
 void lz_db_retain(lz_db db) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), db->_db_queue, ^{
-        db->_retain_count++;
+    dispatch_group_async(*lazy_object_get_dispatch_group(), db->db_queue, ^{
+        db->retain_count++;
         DBG("<%i> Retain count increased.", db);
     });
 }
 
 void lz_db_release(lz_db db) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), db->_db_queue, ^{
-        if (db->_retain_count > 1) {
-            db->_retain_count--;
-            DBG("<%d> Retain count decreased.", db);
+    dispatch_group_async(*lazy_object_get_dispatch_group(), db->db_queue, ^{
+        if (db->retain_count > 1) {
+            db->retain_count--;
+            DBG("<%i> Retain count decreased.", db);
         } else {
             DBG("<%i> Retain count reaches 0.", db);
             dispatch_group_async(*lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
                 // release dispatch queue and free memory
                 DBG("<%i> Releasing database dispatch queue.", db);
-                dispatch_release(db->_db_queue);
+                dispatch_release(db->db_queue);
                 DBG("<%i> Dealloc memory.", db);
                 free(db);
             });

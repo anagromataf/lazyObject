@@ -26,11 +26,18 @@
 
 #include <lazy.h>
 
+#include <stdint.h>
+#include <sys/param.h>
 #include <dispatch/dispatch.h>
 
 struct lazy_database_s {
-    int _retain_count;
-    dispatch_queue_t _db_queue;
+    int retain_count;
+    dispatch_queue_t db_queue;
+    
+    char db_path[MAXPATHLEN];
+    
+    // version of the database
+    int version;
 };
 
 #endif // _LAZY_DATABASE_IMPL_H_

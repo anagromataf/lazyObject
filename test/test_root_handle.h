@@ -30,7 +30,7 @@
 START_TEST (test_root_handle) {
     
     // setup db and create a root handle
-    lz_db db = lz_db_open("test.db");
+    lz_db db = lz_db_open("./tmp/test.db");
     lz_root root = lz_db_root(db, "index");
     lz_db_release(db);
     

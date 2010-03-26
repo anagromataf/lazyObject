@@ -22,11 +22,25 @@
  */
 
 #include <check.h>
+#include <stdarg.h>
+#include <fcntl.h>
+
 
 #include "test_create_lazy_object.h"
 #include "test_create_lazy_object_list.h"
 #include "test_use_async.h"
 #include "test_root_handle.h"
+
+#pragma mark -
+#pragma mark Fixtures
+
+void setup() {
+    system("mkdir ./tmp");
+}
+
+void teardown() {
+    system("rm -rf ./tmp");
+}
 
 #pragma mark -
 #pragma mark Lazy Object Suites
@@ -36,6 +50,7 @@ Suite * lazy_object_suite(void) {
     Suite *s = suite_create("Lazy Object");
     
     TCase *tc_core = tcase_create("Core");
+    tcase_add_checked_fixture (tc_core, setup, teardown);
     
     tcase_add_test(tc_core, test_create_lazy_object);
     tcase_add_test(tc_core, test_create_lazy_object_list);
@@ -63,7 +78,18 @@ Suite * main_suite(void) {
 int main(int argc, char ** argv) {
     int number_failed;
     
+    lz_set_logger(^(int level, const char * msg, ...){
+        if (level < 7) {
+            va_list args;
+            va_start(args, msg);
+            vfprintf(stderr, msg, args);
+            fprintf(stderr, "\n");
+            va_end(args);
+        }
+    });
+    
     SRunner *sr = srunner_create(main_suite());
+    srunner_set_fork_status(sr, CK_NOFORK);
     
     // add the suites to the main suite
     srunner_add_suite(sr, lazy_object_suite());
