@@ -30,6 +30,7 @@
 #include "test_create_lazy_object_list.h"
 #include "test_use_async.h"
 #include "test_root_handle.h"
+#include "test_create_open_db.h"
 
 #pragma mark -
 #pragma mark Fixtures
@@ -56,6 +57,7 @@ Suite * lazy_object_suite(void) {
     tcase_add_test(tc_core, test_create_lazy_object_list);
     tcase_add_test(tc_core, test_use_async);
     tcase_add_test(tc_core, test_root_handle);
+	tcase_add_test(tc_core, test_create_open_db);
     
     suite_add_tcase(s, tc_core);
     

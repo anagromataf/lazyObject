@@ -56,6 +56,7 @@
 		F643B8F7115B821000832707 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		F643B8F8115B821000832707 /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
 		F643B8FE115B829700832707 /* libcheck.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcheck.dylib; path = /opt/local/lib/libcheck.dylib; sourceTree = "<absolute>"; };
+		F6A1E459115E25BE00A49EE8 /* test_create_open_db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_create_open_db.h; path = test/test_create_open_db.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				F643B8EF115B81F700832707 /* check_lazy_object.c */,
+				F6A1E459115E25BE00A49EE8 /* test_create_open_db.h */,
 				F643B8F0115B81F700832707 /* test_create_lazy_object_list.h */,
 				F643B8F1115B81F700832707 /* test_create_lazy_object.h */,
 				F643B8F2115B81F700832707 /* test_root_handle.h */,

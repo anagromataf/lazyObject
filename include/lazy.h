@@ -97,6 +97,11 @@ void lz_db_retain(lz_db db);
 void lz_db_release(lz_db db);
 
 #pragma mark -
+#pragma mark Database Version
+
+int lz_db_version(lz_db db);
+
+#pragma mark -
 #pragma mark Access Root Handle
 
 lz_root lz_db_root(lz_db db, const char * name);

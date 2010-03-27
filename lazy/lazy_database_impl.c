@@ -82,6 +82,7 @@ lz_db lz_db_open(const char * path) {
         if (fd) {
             fprintf(fd, "1");
             fclose(fd);
+			version = 1;
         } else {
             strerror_r(errno, msg, 1024);
             ERR("Could not create version info for database '%s': %s", path, msg);
@@ -136,6 +137,13 @@ void lz_db_release(lz_db db) {
             });
         };
     });
+}
+
+#pragma mark -
+#pragma mark Database Version
+
+int lz_db_version(lz_db db) {
+	return db->version;
 }
 
 #pragma mark -
