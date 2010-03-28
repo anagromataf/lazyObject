@@ -30,8 +30,13 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <assert.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+
+// OS X only
+#include <CommonCrypto/CommonDigest.h>
+
 
 #pragma mark -
 #pragma mark Database Livecycle
@@ -96,6 +101,14 @@ lz_db lz_db_open(const char * path) {
             ERR("Could not create chunk folder for database '%s': %s", path, msg);
             return 0;
         }
+		
+		// create index folder
+        snprintf(filename, MAXPATHLEN, "%s/index", path);
+        if (mkdir(filename, S_IRWXU)) {
+            strerror_r(errno, msg, 1024);
+            ERR("Could not create index folder for database '%s': %s", path, msg);
+            return 0;
+        }
     }
     
     // create handle
@@ -106,6 +119,8 @@ lz_db lz_db_open(const char * path) {
         
         db->version = version;
         strcpy(db->db_path, path);
+		
+		db->chunk = lazy_database_chunk_open(db, 0, CHUNK_RW);
         
         DBG("<%i> New database handle created.", db);
     } else {
@@ -130,6 +145,7 @@ void lz_db_release(lz_db db) {
             DBG("<%i> Retain count reaches 0.", db);
             dispatch_group_async(*lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
                 // release dispatch queue and free memory
+				lazy_database_chunk_release(db->chunk);
                 DBG("<%i> Releasing database dispatch queue.", db);
                 dispatch_release(db->db_queue);
                 DBG("<%i> Dealloc memory.", db);
@@ -150,15 +166,55 @@ int lz_db_version(lz_db db) {
 #pragma mark Access Root Handle
 
 lz_root lz_db_root(lz_db db, const char * name) {
+	
+	unsigned char digest[CC_SHA1_DIGEST_LENGTH];
+	char digest_str[CC_SHA1_DIGEST_LENGTH * 2 + 1];
+	struct lazy_object_id_s root_id;
+	FILE * fd;
+	char msg[1024];
+    char filename[MAXPATHLEN];
+	int exsits = 0;
+	
+	// sha1(name)
+	CC_SHA1(name, strlen(name), digest);
+	// OPTIMIZE: find a better way to convert the digest to a string
+	snprintf(digest_str,
+			 CC_SHA1_DIGEST_LENGTH * 2 + 1,
+			 "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+			 digest[0],digest[1],digest[2],digest[3],digest[4],digest[5],digest[6],digest[7],digest[8],digest[9],digest[10],digest[11],digest[12],digest[13],digest[14],digest[15],digest[16],digest[17],digest[18],digest[19]);
+	
+    // read root obj
+    snprintf(filename, MAXPATHLEN, "%s/index/%s", db->db_path, digest_str);
+    fd = fopen(filename, "r+");
+    if (fd) {
+        exsits = 1;
+		assert(sizeof(root_id) == fread(&root_id, sizeof(root_id), sizeof(root_id), fd));
+		fclose(fd);
+    } else {
+        switch (errno) {
+            case ENOENT:
+                exsits = 0;
+                break;
+            default:
+                strerror_r(errno, msg, 1024);
+                ERR("Could not read root object '%s' (%s): %s", name, digest_str, msg);
+                return 0;
+        }
+    }
+	
     struct lazy_root_s * root = malloc(sizeof(struct lazy_root_s));
     if (root) {
         root->_root_queue = dispatch_queue_create(NULL, NULL);
         root->_retain_count = 1;
+		
+		strcpy(root->_path, filename);
+		
+		root->_exsits = exsits;
+		root->_obj_id = root_id;
+		
         lz_db_retain(db);
         root->_database = db;
-        root->_name = malloc(strlen(name));
-        root->_name = strcpy(root->_name, name);
-        root->_root_obj = 0;
+        root->_obj = 0;
         DBG("<%i> New root handle created.", root);
     } else {
         ERR("Could not allocate memory to create a new root handle.");

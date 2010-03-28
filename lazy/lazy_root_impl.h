@@ -26,16 +26,22 @@
 
 #include <lazy.h>
 
+#include <sys/param.h>
 #include <dispatch/dispatch.h>
+
+#include "lazy_database_impl.h"
 
 struct lazy_root_s {
     int _retain_count;
     dispatch_queue_t _root_queue;
 
-    char * _name;
+	char _path[MAXPATHLEN];
+	
+	int _exsits;
+	struct lazy_object_id_s _obj_id;
+	
     lz_db _database;
-    
-    lz_obj _root_obj;
+    lz_obj _obj;
 };
 
 #endif // _LAZY_ROOT_IMPL_H_

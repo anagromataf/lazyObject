@@ -26,21 +26,22 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <Block.h>
 
 #pragma mark -
 #pragma mark Object Livecycle
 
 lz_obj lz_obj_new(void * data,
-              uint32_t length,
-              void(^dealloc)(void * data, uint32_t length),
-              uint16_t num_ref, ...) {
+				  uint32_t length,
+				  void(^dealloc)(void * data, uint32_t length),
+				  uint16_t num_ref, ...) {
     struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
     if (obj) {
         obj->_obj_queue = dispatch_queue_create(NULL, NULL);
         obj->_retain_count = 1;
         obj->_length = length;
         obj->_data = data;
-        obj->_dealloc = dealloc;
+        obj->_dealloc = Block_copy(dealloc);
         
         // set up references
         obj->_number_of_references = num_ref;
@@ -67,6 +68,7 @@ lz_obj lz_obj_new(void * data,
     return obj;
 }
 
+
 void lz_obj_retain(struct lazy_object_s * obj) {
     dispatch_group_async(*lazy_object_get_dispatch_group(), obj->_obj_queue, ^{
         obj->_retain_count++;
@@ -85,7 +87,8 @@ void lz_obj_release(struct lazy_object_s * obj) {
                 // dealloc payload
                 DBG("<%i> Calling custom dealloc to free the payload.", obj);
                 obj->_dealloc(obj->_data, obj->_length);
-                                     
+				Block_release(obj->_dealloc);
+				
                 // release references
                 DBG("<%i> Releasing %i references.", obj, obj->_number_of_references);
                 int loop;
@@ -109,6 +112,41 @@ int lz_obj_rc(lz_obj obj) {
         rc = obj->_retain_count;
     });
     return rc;
+}
+
+#pragma mark -
+#pragma mark Unmarshal Object
+
+lz_obj lz_obj_unmarshal(void * data,
+						uint32_t length,
+						void(^dealloc)(void * data, uint32_t length),
+						uint16_t num_ref, uint16_t * refs) {
+	struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
+    if (obj) {
+        obj->_obj_queue = dispatch_queue_create(NULL, NULL);
+        obj->_retain_count = 1;
+        obj->_length = length;
+        obj->_data = data;
+        obj->_dealloc = Block_copy(dealloc);
+        
+        // set up references
+        obj->_number_of_references = num_ref;
+        obj->_references = malloc(sizeof(struct lazy_reference_s) * num_ref);
+        if (obj->_references) {
+            int loop;
+            for (loop = 0; loop < num_ref; loop++) {
+                // TODO: setup ref
+            }
+        } else {
+            free(obj);
+            obj = 0;
+            dealloc(data, length);
+        }
+        DBG("<%i> New object created.", obj);
+    } else {
+        ERR("Could not allocate memory to create a new object.");
+    }
+    return obj;
 }
 
 #pragma mark -

@@ -21,6 +21,8 @@
 		F643B8F4115B81F700832707 /* check_lazy_object.c in Sources */ = {isa = PBXBuildFile; fileRef = F643B8EF115B81F700832707 /* check_lazy_object.c */; };
 		F643B8FD115B828600832707 /* liblazyObject.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAC046055464E500DB518D /* liblazyObject.a */; };
 		F643B8FF115B829700832707 /* libcheck.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F643B8FE115B829700832707 /* libcheck.dylib */; };
+		F66547A7115FB22000ACAA78 /* lazy_database_chunk_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F66547A5115FB22000ACAA78 /* lazy_database_chunk_impl.h */; };
+		F66547A8115FB22000ACAA78 /* lazy_database_chunk_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F66547A6115FB22000ACAA78 /* lazy_database_chunk_impl.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +58,9 @@
 		F643B8F7115B821000832707 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		F643B8F8115B821000832707 /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
 		F643B8FE115B829700832707 /* libcheck.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcheck.dylib; path = /opt/local/lib/libcheck.dylib; sourceTree = "<absolute>"; };
+		F66547A5115FB22000ACAA78 /* lazy_database_chunk_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_database_chunk_impl.h; path = lazy/lazy_database_chunk_impl.h; sourceTree = "<group>"; };
+		F66547A6115FB22000ACAA78 /* lazy_database_chunk_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_database_chunk_impl.c; path = lazy/lazy_database_chunk_impl.c; sourceTree = "<group>"; };
+		F665497C115FD9E000ACAA78 /* test_chunk_write.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_chunk_write.h; path = test/test_chunk_write.h; sourceTree = "<group>"; };
 		F6A1E459115E25BE00A49EE8 /* test_create_open_db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_create_open_db.h; path = test/test_create_open_db.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -122,6 +127,8 @@
 				F643B8E1115B81DD00832707 /* lazy_object_impl.h */,
 				F643B8E2115B81DD00832707 /* lazy_root_impl.c */,
 				F643B8E3115B81DD00832707 /* lazy_root_impl.h */,
+				F66547A5115FB22000ACAA78 /* lazy_database_chunk_impl.h */,
+				F66547A6115FB22000ACAA78 /* lazy_database_chunk_impl.c */,
 			);
 			name = "Lib Lazy";
 			sourceTree = "<group>";
@@ -135,6 +142,7 @@
 				F643B8F1115B81F700832707 /* test_create_lazy_object.h */,
 				F643B8F2115B81F700832707 /* test_root_handle.h */,
 				F643B8F3115B81F700832707 /* test_use_async.h */,
+				F665497C115FD9E000ACAA78 /* test_chunk_write.h */,
 			);
 			name = Tests;
 			sourceTree = "<group>";
@@ -162,6 +170,7 @@
 				F643B8E9115B81DD00832707 /* lazy_object_dispatch_group.h in Headers */,
 				F643B8EB115B81DD00832707 /* lazy_object_impl.h in Headers */,
 				F643B8ED115B81DD00832707 /* lazy_root_impl.h in Headers */,
+				F66547A7115FB22000ACAA78 /* lazy_database_chunk_impl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +242,7 @@
 				F643B8E8115B81DD00832707 /* lazy_object_dispatch_group.c in Sources */,
 				F643B8EA115B81DD00832707 /* lazy_object_impl.c in Sources */,
 				F643B8EC115B81DD00832707 /* lazy_root_impl.c in Sources */,
+				F66547A8115FB22000ACAA78 /* lazy_database_chunk_impl.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

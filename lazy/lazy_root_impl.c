@@ -44,16 +44,14 @@ void lz_root_release(lz_root root) {
         } else {
             DBG("<%i> Retain count reaches 0.", root);
             dispatch_group_async(*lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
-                if (root->_root_obj) {
-                    lz_obj_release(root->_root_obj);
+                if (root->_obj) {
+                    lz_obj_release(root->_obj);
                 }
                 // release dispatch queue and free memory
                 DBG("<%i> Releasing reference to the database.");
                 lz_db_release(root->_database);
                 DBG("<%i> Releasing root dispatch queue.", root);
                 dispatch_release(root->_root_queue);
-                DBG("<%i> Free internal memory.", root);
-                free(root->_name);
                 DBG("<%i> Dealloc memory.", root);
                 free(root);
             });
@@ -67,29 +65,29 @@ void lz_root_release(lz_root root) {
 lz_obj lz_root_get(lz_root root) {
     __block lz_obj result;
     dispatch_sync(root->_root_queue, ^{
-        result = root->_root_obj;
+        result = root->_obj;
         if (result) {
             // retain the root object
             // to return an object with rc +1
             lz_obj_retain(result);
         }
-        DBG("<%i> Get object <%i> as root for '%s'", root, result, root->_name);
+        DBG("<%i> Get object <%i>", root, result);
     });
     return result;
 }
 
 void lz_root_set(lz_root root, lz_obj obj) {
     dispatch_group_async(*lazy_object_get_dispatch_group(), root->_root_queue, ^{
-        DBG("<%i> Set object <%i> as root for '%s'", root, obj, root->_name);
-        if (!lz_obj_same(obj, root->_root_obj)) {
+        DBG("<%i> Set object <%i>", root, obj);
+        if (!lz_obj_same(obj, root->_obj)) {
             // release the old root object
-            if (root->_root_obj) {
-                lz_obj_release(root->_root_obj);
+            if (root->_obj) {
+                lz_obj_release(root->_obj);
             }
             // retain the new root object
             if (obj) {
                 lz_obj_retain(obj);
-                root->_root_obj = obj;
+                root->_obj = obj;
             }
         }
     });    
@@ -97,10 +95,10 @@ void lz_root_set(lz_root root, lz_obj obj) {
 
 void lz_root_del(lz_root root) {
     dispatch_group_async(*lazy_object_get_dispatch_group(), root->_root_queue, ^{
-        if (root->_root_obj) {
+        if (root->_obj) {
             // release the old root object
-            lz_obj_release(root->_root_obj);
-            root->_root_obj = 0;
+            lz_obj_release(root->_obj);
+            root->_obj = 0;
         }
     }); 
 }

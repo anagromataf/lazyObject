@@ -49,4 +49,12 @@ struct lazy_object_s {
     void * _data;
 };
 
+#pragma mark -
+#pragma mark Unmarshal Object
+
+lz_obj lz_obj_unmarshal(void * data,
+						uint32_t length,
+						void(^dealloc)(void * data, uint32_t length),
+						uint16_t num_ref, uint16_t * refs);
+
 #endif // _LAZY_OBJECT_IMPL_H_

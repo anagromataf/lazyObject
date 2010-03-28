@@ -30,6 +30,13 @@
 #include <sys/param.h>
 #include <dispatch/dispatch.h>
 
+#include "lazy_database_chunk_impl.h"
+
+struct lazy_object_id_s {
+	uint32_t chunk;
+	uint32_t id;
+};
+
 struct lazy_database_s {
     int retain_count;
     dispatch_queue_t db_queue;
@@ -38,6 +45,8 @@ struct lazy_database_s {
     
     // version of the database
     int version;
+	
+	struct lazy_database_chunk_s * chunk;
 };
 
 #endif // _LAZY_DATABASE_IMPL_H_
