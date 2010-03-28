@@ -28,18 +28,25 @@
 
 #include <dispatch/dispatch.h>
 
-struct lazy_reference_s {
-    struct lazy_object_s * _obj_handle;
+struct lazy_object_id_s {
+	uint32_t cid;
+	uint32_t oid;
 };
 
 struct lazy_object_s {
     // reference livecycle
     int _retain_count;
     dispatch_queue_t _obj_queue;
+	
+	int _temporary;
+	struct lazy_object_id_s _id;
+	dispatch_semaphore_t _semaphore;
     
     // references to other objects
-    uint16_t _number_of_references;
-    struct lazy_reference_s * _references;
+    uint32_t _number_of_references;
+	struct lazy_object_id_s * _ref_ids;
+	struct lazy_object_s ** _ref_objs;
+	lz_db _db;
     
     // custom deallocator
     void (^_dealloc)(void * data, uint32_t size);
@@ -52,9 +59,10 @@ struct lazy_object_s {
 #pragma mark -
 #pragma mark Unmarshal Object
 
-lz_obj lz_obj_unmarshal(void * data,
+lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
+						void * data,
 						uint32_t length,
 						void(^dealloc)(void * data, uint32_t length),
-						uint16_t num_ref, uint16_t * refs);
+						uint16_t num_ref, struct lazy_object_id_s * refs);
 
 #endif // _LAZY_OBJECT_IMPL_H_

@@ -24,6 +24,8 @@
 #ifndef _TEST_CREATE_LAZY_OBJECT_LIST_H_
 #define _TEST_CREATE_LAZY_OBJECT_LIST_H_
 
+#include "lazy_database_impl.h"
+
 #include <check.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,7 +36,7 @@ lz_obj create_string_obj(const char * str) {
     char * value = malloc(strlen(str));
     value = strcpy(value, str);
     if (value) {
-        result = lz_obj_new(value, strlen(value), ^(void * data, uint32_t size){
+        result = lz_obj_new(value, strlen(value) + 1, ^(void * data, uint32_t size){
             free(data);
         }, 0, 0);
         if (!result) {
@@ -47,22 +49,31 @@ lz_obj create_string_obj(const char * str) {
 }
 
 START_TEST (test_create_lazy_object_list) {
-    
+	
     lz_obj strA = create_string_obj("A");
     lz_obj strB = create_string_obj("B");
     lz_obj strC = create_string_obj("C");
     
     char * text = "Eine Liste mit A, B und C!";
     
-    lz_obj list = lz_obj_new(text, strlen(text), ^(void * data, uint32_t size){}, 3, strA, strB, strC);
+    lz_obj list = lz_obj_new(text, strlen(text) + 1, ^(void * data, uint32_t size){}, 3, strA, strB, strC);
     
     fail_if(list == 0);
     
     lz_obj_release(strA);
     lz_obj_release(strB);
     lz_obj_release(strC);
-    lz_wait_for_completion();
     
+	
+	lz_db db = lz_db_open("./tmp/test.db");
+	struct lazy_object_id_s oid = lazy_database_write_object(db, list);
+	lz_obj_release(list);
+	lz_db_release(db);
+	lz_wait_for_completion();
+	
+	db = lz_db_open("./tmp/test.db");
+	list = lazy_database_read_object(db, oid);
+	
     lz_obj_sync(list, ^(void * data, uint32_t size){
         fail_unless(strcmp(data, text) == 0);
         
@@ -88,7 +99,8 @@ START_TEST (test_create_lazy_object_list) {
     });
     
     lz_obj_release(list);
-    lz_wait_for_completion();
+    lz_db_release(db);
+	lz_wait_for_completion();
     
 } END_TEST
 

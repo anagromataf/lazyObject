@@ -44,6 +44,7 @@ struct lazy_database_chunk_s {
 	
 	enum lazy_database_chunk_mode mode;
 	
+	uint32_t cid;
 	char filename[MAXPATHLEN];
 	int file_size;
 	FILE * file;

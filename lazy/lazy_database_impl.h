@@ -31,11 +31,7 @@
 #include <dispatch/dispatch.h>
 
 #include "lazy_database_chunk_impl.h"
-
-struct lazy_object_id_s {
-	uint32_t chunk;
-	uint32_t id;
-};
+#include "lazy_object_impl.h"
 
 struct lazy_database_s {
     int retain_count;
@@ -48,5 +44,11 @@ struct lazy_database_s {
 	
 	struct lazy_database_chunk_s * chunk;
 };
+
+#pragma mark -
+#pragma mark Read & Write Objects
+
+lz_obj lazy_database_read_object(lz_db db, struct lazy_object_id_s id);
+struct lazy_object_id_s lazy_database_write_object(lz_db db, lz_obj obj);
 
 #endif // _LAZY_DATABASE_IMPL_H_

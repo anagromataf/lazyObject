@@ -35,7 +35,7 @@ START_TEST (test_create_lazy_object) {
     
     __block int dealloc_called = 0;
     
-    lz_obj obj = lz_obj_new(text, strlen(text), ^(void * data, uint32_t size){dealloc_called = 1;}, 0, 0);
+    lz_obj obj = lz_obj_new(text, strlen(text) + 1, ^(void * data, uint32_t size){dealloc_called = 1;}, 0, 0);
     
     fail_if(obj == 0);
     fail_unless(lz_obj_rc(obj) == 1);

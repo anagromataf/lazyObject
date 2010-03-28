@@ -24,6 +24,7 @@
 #include "lazy_database_impl.h"
 #include "lazy_root_impl.h"
 #include "lazy_object_dispatch_group.h"
+#include "lazy_database_chunk_impl.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -120,7 +121,7 @@ lz_db lz_db_open(const char * path) {
         db->version = version;
         strcpy(db->db_path, path);
 		
-		db->chunk = lazy_database_chunk_open(db, 0, CHUNK_RW);
+		db->chunk = lazy_database_chunk_open(db, 1, CHUNK_RW);
         
         DBG("<%i> New database handle created.", db);
     } else {
@@ -160,6 +161,36 @@ void lz_db_release(lz_db db) {
 
 int lz_db_version(lz_db db) {
 	return db->version;
+}
+
+#pragma mark -
+#pragma mark Read & Write Objects
+
+lz_obj lazy_database_read_object(lz_db db,
+								 struct lazy_object_id_s id) {
+	assert(id.cid == 1);
+	lz_obj obj = lazy_database_chunk_read_object(db->chunk, id.oid);
+	obj->_db = db;
+	lz_db_retain(db);
+	return obj;
+}
+
+struct lazy_object_id_s lazy_database_write_object(lz_db db,
+												   lz_obj obj) {
+	dispatch_semaphore_wait(obj->_semaphore, DISPATCH_TIME_FOREVER);
+	if (obj->_temporary) {
+		dispatch_apply(obj->_number_of_references, dispatch_get_global_queue(0, 0), ^(size_t i){
+			if ((obj->_ref_ids[i].cid) == 0) {
+				obj->_ref_ids[i] = lazy_database_write_object(db, obj->_ref_objs[i]);
+			}
+		});
+		obj->_id.cid = db->chunk->cid;
+		obj->_id.oid = lazy_database_chunk_write_object(db->chunk, obj);
+		obj->_db = db;
+		lz_db_retain(db);
+	}
+	dispatch_semaphore_signal(obj->_semaphore);
+	return obj->_id;
 }
 
 #pragma mark -
