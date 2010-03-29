@@ -241,8 +241,7 @@ struct lazy_object_id_s lazy_database_chunk_write_object(struct lazy_database_ch
         
         obj->id.oid = oid;
         obj->id.cid = chunk->cid;
-        lz_retain(chunk->database);
-        obj->database = chunk->database;
+        obj->database = lz_retain(chunk->database);;
         
 		id = obj->id;
     });

@@ -204,9 +204,7 @@ lz_root lz_db_root(lz_db db, const char * name) {
     struct lazy_root_s * root = malloc(sizeof(struct lazy_root_s));
     if (root) {
         LAZY_BASE_INIT(root, ^{
-            if (root->root_obj) {
-                lz_release(root->root_obj);
-            }
+            lz_release(root->root_obj);
             lz_release(root->database);
         });
 		strcpy(root->filename, filename);

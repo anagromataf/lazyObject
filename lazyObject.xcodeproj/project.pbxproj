@@ -123,16 +123,16 @@
 			children = (
 				F69BD6DF1160A0BE0061ECD8 /* lazy_base_impl.h */,
 				F69BD6E01160A0BE0061ECD8 /* lazy_base_impl.c */,
-				F643B8DA115B81DD00832707 /* lazy_database_impl.c */,
 				F643B8DB115B81DD00832707 /* lazy_database_impl.h */,
-				F643B8DC115B81DD00832707 /* lazy_logging_impl.c */,
+				F643B8DA115B81DD00832707 /* lazy_database_impl.c */,
 				F643B8DD115B81DD00832707 /* lazy_logging_impl.h */,
-				F643B8DE115B81DD00832707 /* lazy_object_dispatch_group.c */,
+				F643B8DC115B81DD00832707 /* lazy_logging_impl.c */,
 				F643B8DF115B81DD00832707 /* lazy_object_dispatch_group.h */,
-				F643B8E0115B81DD00832707 /* lazy_object_impl.c */,
+				F643B8DE115B81DD00832707 /* lazy_object_dispatch_group.c */,
 				F643B8E1115B81DD00832707 /* lazy_object_impl.h */,
-				F643B8E2115B81DD00832707 /* lazy_root_impl.c */,
+				F643B8E0115B81DD00832707 /* lazy_object_impl.c */,
 				F643B8E3115B81DD00832707 /* lazy_root_impl.h */,
+				F643B8E2115B81DD00832707 /* lazy_root_impl.c */,
 				F66547A5115FB22000ACAA78 /* lazy_database_chunk_impl.h */,
 				F66547A6115FB22000ACAA78 /* lazy_database_chunk_impl.c */,
 			);
@@ -142,13 +142,13 @@
 		F643B8EE115B81E300832707 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				F643B8EF115B81F700832707 /* check_lazy_object.c */,
 				F6A1E459115E25BE00A49EE8 /* test_create_open_db.h */,
 				F643B8F0115B81F700832707 /* test_create_lazy_object_list.h */,
 				F643B8F1115B81F700832707 /* test_create_lazy_object.h */,
 				F643B8F2115B81F700832707 /* test_root_handle.h */,
 				F643B8F3115B81F700832707 /* test_use_async.h */,
 				F665497C115FD9E000ACAA78 /* test_chunk_write.h */,
+				F643B8EF115B81F700832707 /* check_lazy_object.c */,
 			);
 			name = Tests;
 			sourceTree = "<group>";

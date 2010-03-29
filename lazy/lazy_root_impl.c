@@ -32,12 +32,7 @@
 lz_obj lz_root_get(lz_root root) {
     __block lz_obj result;
     dispatch_sync(root->queue, ^{
-        result = root->root_obj;
-        if (result) {
-            // retain the root object
-            // to return an object with rc +1
-            lz_retain(result);
-        }
+        result = lz_retain(root->root_obj);
         DBG("<%i> Get object <%i>", root, result);
     });
     return result;
@@ -47,26 +42,16 @@ void lz_root_set(lz_root root, lz_obj obj) {
     dispatch_group_async(*lazy_object_get_dispatch_group(), root->queue, ^{
         DBG("<%i> Set object <%i>", root, obj);
         if (!lz_obj_same(obj, root->root_obj)) {
-            // release the old root object
-            if (root->root_obj) {
-                lz_release(root->root_obj);
-            }
-            // retain the new root object
-            if (obj) {
-                lz_retain(obj);
-                root->root_obj = obj;
-            }
+            lz_release(root->root_obj);
+            root->root_obj = lz_retain(obj);;
         }
     });    
 }
 
 void lz_root_del(lz_root root) {
     dispatch_group_async(*lazy_object_get_dispatch_group(), root->queue, ^{
-        if (root->root_obj) {
-            // release the old root object
-            lz_release(root->root_obj);
-            root->root_obj = 0;
-        }
+        lz_release(root->root_obj);
+        root->root_obj = 0;
     }); 
 }
 

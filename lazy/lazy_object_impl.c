@@ -48,12 +48,10 @@ lz_obj lz_obj_new(void * data,
                 lz_release(obj->reference_objs[loop]);
             }
             DBG("<%i> References released.", obj);
-            if (obj->database) {
-                DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
-                lz_release(obj->database);
-            } else {
-                DBG("<%i> No database handle to release.", obj);
-            }
+            
+            DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
+            lz_release(obj->database);
+            
             dispatch_release(obj->write_lock);
             obj->payload_dealloc();
             Block_release(obj->payload_dealloc);
@@ -70,8 +68,7 @@ lz_obj lz_obj_new(void * data,
             int loop;
             for (loop = 0; loop < num_ref; loop++) {
                 struct lazy_object_s * ref = va_arg(refs, struct lazy_object_s *);
-                lz_retain(ref);
-                obj->reference_objs[loop] = ref;
+                obj->reference_objs[loop] = lz_retain(ref);
             }
             va_end(refs);
             obj->write_lock = dispatch_semaphore_create(1);
@@ -114,12 +111,10 @@ lz_obj lz_obj_unmarshal(lz_db db,
                 lz_release(obj->reference_objs[loop]);
             }
             DBG("<%i> References released.", obj);
-            if (obj->database) {
-                DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
-                lz_release(obj->database);
-            } else {
-                DBG("<%i> No database handle to release.", obj);
-            }
+            
+            DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
+            lz_release(obj->database);
+            
             dispatch_release(obj->write_lock);
             obj->payload_dealloc();
             Block_release(obj->payload_dealloc);
@@ -138,8 +133,7 @@ lz_obj lz_obj_unmarshal(lz_db db,
             obj->payload_length = length;
             obj->payload_data = data;
             obj->payload_dealloc = Block_copy(dealloc);
-            lz_retain(db);
-            obj->database = db;
+            obj->database = lz_retain(db);
             DBG("<%i> New object created.", obj);
         } else {
 			free(obj->reference_ids);
@@ -174,10 +168,7 @@ uint16_t lz_obj_num_ref(lz_obj obj) {
 
 lz_obj lz_obj_ref(lz_obj obj, uint16_t pos) {
     lz_obj result = lz_obj_weak_ref(obj, pos);
-    if (result) {
-        lz_retain(result);
-    }
-    return result;
+    return lz_retain(result);
 }
 
 lz_obj lz_obj_weak_ref(lz_obj obj, uint16_t pos) {

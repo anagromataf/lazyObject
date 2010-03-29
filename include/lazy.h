@@ -66,8 +66,8 @@ void lz_wait_for_completion();
 #pragma mark -
 #pragma mark Memory Management
 
-void lz_retain(lz_base obj);
-void lz_release(lz_base obj);
+void * lz_retain(lz_base obj);
+void * lz_release(lz_base obj);
 
 int lz_rc(lz_base obj);
 

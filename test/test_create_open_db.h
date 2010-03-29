@@ -41,8 +41,6 @@ START_TEST (test_create_open_db) {
 	lz_release(db);
 	lz_wait_for_completion();
 	
-    lz_wait_for_completion();
-	
 } END_TEST
 
 #endif // _TEST_CREATE_OPEN_DB_H_
