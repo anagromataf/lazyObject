@@ -224,7 +224,7 @@ lz_obj lazy_database_chunk_read_object(struct lazy_database_chunk_s * chunk, uin
 	id.oid = oid;
 	lz_obj result = lz_obj_unmarshal(id, obj->data + obj->num_ref * sizeof(struct lazy_object_id_s), obj->length, ^(void * d, uint32_t l){
 		lazy_database_chunk_release(chunk);
-	}, obj->num_ref, obj->data);
+	}, obj->num_ref, (struct lazy_object_id_s *)obj->data);
 	
 	if (result) {
 		lazy_database_chunk_retain(chunk);
