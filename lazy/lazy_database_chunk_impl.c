@@ -68,7 +68,7 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 	struct _chunk_header_s * chunk;
 	
 	// create chunk path
-	snprintf(filename, MAXPATHLEN, "%s/chunks/%x", db->db_path, cid);
+	snprintf(filename, MAXPATHLEN, "%s/chunks/%x", db->filename, cid);
 	
 	// open file
 	fd = fopen(filename, mode == CHUNK_RW ? "r+" : "r");

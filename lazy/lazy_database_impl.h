@@ -37,7 +37,7 @@
 struct lazy_database_s {
     LAZY_BASE_HEAD
     
-    char db_path[MAXPATHLEN];
+    char filename[MAXPATHLEN];
     
     // version of the database
     int version;
