@@ -53,6 +53,15 @@ lz_obj lz_obj_new(void * data,
                 obj->_ref_objs[loop] = ref;
             }
             va_end(refs);
+            obj->_obj_queue = dispatch_queue_create(NULL, NULL);
+            obj->_semaphore = dispatch_semaphore_create(1);
+            obj->_retain_count = 1;
+            obj->_temporary = 1;
+            obj->_length = length;
+            obj->_data = data;
+            obj->_dealloc = Block_copy(dealloc);
+            obj->_db = 0;
+            DBG("<%i> New object created.", obj);
         } else {
 			free(obj->_ref_ids);
 			free(obj->_ref_objs);
@@ -60,15 +69,6 @@ lz_obj lz_obj_new(void * data,
             obj = 0;
             dealloc(data, length);
         }
-		obj->_obj_queue = dispatch_queue_create(NULL, NULL);
-		obj->_semaphore = dispatch_semaphore_create(1);
-        obj->_retain_count = 1;
-		obj->_temporary = 1;
-        obj->_length = length;
-        obj->_data = data;
-        obj->_dealloc = Block_copy(dealloc);
-		obj->_db = 0;
-        DBG("<%i> New object created.", obj);
     } else {
         ERR("Could not allocate memory to create a new object.");
     }
@@ -143,6 +143,16 @@ lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
 		obj->_ref_ids = calloc(num_ref, sizeof(struct lazy_object_id_s));
         if (obj->_ref_objs && obj->_ref_ids) {
 			memcpy(obj->_ref_ids, refs, sizeof(struct lazy_object_id_s) * num_ref);
+            obj->_obj_queue = dispatch_queue_create(NULL, NULL);
+            obj->_semaphore = dispatch_semaphore_create(1);
+            obj->_retain_count = 1;
+            obj->_temporary = 0;
+            obj->_id = id;
+            obj->_length = length;
+            obj->_data = data;
+            obj->_dealloc = Block_copy(dealloc);
+            obj->_db = 0;
+            DBG("<%i> New object created.", obj);
         } else {
 			free(obj->_ref_ids);
 			free(obj->_ref_objs);
@@ -150,16 +160,6 @@ lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
             obj = 0;
             dealloc(data, length);
         }
-		obj->_obj_queue = dispatch_queue_create(NULL, NULL);
-		obj->_semaphore = dispatch_semaphore_create(1);
-        obj->_retain_count = 1;
-		obj->_temporary = 0;
-		obj->_id = id;
-        obj->_length = length;
-        obj->_data = data;
-        obj->_dealloc = Block_copy(dealloc);
-		obj->_db = 0;
-        DBG("<%i> New object created.", obj);
     } else {
         ERR("Could not allocate memory to create a new object.");
     }
