@@ -49,7 +49,10 @@ lz_obj lz_obj_new(void * data,
             }
             DBG("<%i> References released.", obj);
             if (obj->_db) {
+                DBG("<%i> Releasing reference to database <%i>.", obj, obj->_db);
                 lz_release(obj->_db);
+            } else {
+                DBG("<%i> No database handle to release.", obj);
             }
             dispatch_release(obj->_semaphore);
             obj->payload_dealloc();
@@ -94,7 +97,8 @@ lz_obj lz_obj_new(void * data,
 #pragma mark -
 #pragma mark Unmarshal Object
 
-lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
+lz_obj lz_obj_unmarshal(lz_db db,
+                        struct lazy_object_id_s id,
 						void * data,
 						uint32_t length,
 						void(^dealloc)(),
@@ -111,7 +115,10 @@ lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
             }
             DBG("<%i> References released.", obj);
             if (obj->_db) {
+                DBG("<%i> Releasing reference to database <%i>.", obj, obj->_db);
                 lz_release(obj->_db);
+            } else {
+                DBG("<%i> No database handle to release.", obj);
             }
             dispatch_release(obj->_semaphore);
             obj->payload_dealloc();
@@ -131,7 +138,8 @@ lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
             obj->_length = length;
             obj->_data = data;
             obj->payload_dealloc = Block_copy(dealloc);
-            obj->_db = 0;
+            lz_retain(db);
+            obj->_db = db;
             DBG("<%i> New object created.", obj);
         } else {
 			free(obj->_ref_ids);

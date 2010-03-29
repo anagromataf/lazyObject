@@ -39,11 +39,11 @@ START_TEST (test_chunk_write) {
     
 	chunk = db->chunk;
 	
-	int oidA = lazy_database_chunk_write_object(chunk, objA);
-	fail_unless(oidA == 0);
+    struct lazy_object_id_s oidA = lazy_database_chunk_write_object(chunk, objA);
+	fail_unless(oidA.oid == 0);
 	
-	int oidB = lazy_database_chunk_write_object(chunk, objB);
-	fail_unless(oidB == 1);
+	struct lazy_object_id_s oidB = lazy_database_chunk_write_object(chunk, objB);
+	fail_unless(oidB.oid == 1);
 	
 	lz_release(objA);
 	lz_release(objB);

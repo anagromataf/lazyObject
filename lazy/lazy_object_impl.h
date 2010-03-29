@@ -58,7 +58,8 @@ struct lazy_object_s {
 #pragma mark -
 #pragma mark Unmarshal Object
 
-lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
+lz_obj lz_obj_unmarshal(lz_db db,
+                        struct lazy_object_id_s id,
 						void * data,
 						uint32_t length,
 						void(^dealloc)(),

@@ -33,6 +33,7 @@
 
 #include "lazy_base_impl.h"
 #include "lazy_database_impl.h"
+#include "lazy_object_impl.h"
 
 enum lazy_database_chunk_mode {
 	CHUNK_RO,
@@ -48,6 +49,9 @@ struct lazy_database_chunk_s {
 	char filename[MAXPATHLEN];
 	int file_size;
 	FILE * file;
+    
+    // weak ref to the database
+    lz_db database;
 	
 	struct _chunk_header_s * chunk;
 	
@@ -67,8 +71,8 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 #pragma mark -
 #pragma mark Read & Write Object
 
-lz_obj lazy_database_chunk_read_object(struct lazy_database_chunk_s * chunk, uint32_t oid);
-uint32_t lazy_database_chunk_write_object(struct lazy_database_chunk_s * chunk, lz_obj obj);
+lz_obj lazy_database_chunk_read_object(struct lazy_database_chunk_s * chunk, struct lazy_object_id_s id);
+struct lazy_object_id_s lazy_database_chunk_write_object(struct lazy_database_chunk_s * chunk, lz_obj obj);
 
 
 #endif // _LAZY_DATABASE_CHUNK_IMPL_H_

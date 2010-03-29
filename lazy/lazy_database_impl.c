@@ -142,9 +142,7 @@ int lz_db_version(lz_db db) {
 lz_obj lazy_database_read_object(lz_db db,
 								 struct lazy_object_id_s id) {
 	assert(id.cid == 1);
-	lz_obj obj = lazy_database_chunk_read_object(db->chunk, id.oid);
-	obj->_db = db;
-	lz_retain(db);
+	lz_obj obj = lazy_database_chunk_read_object(db->chunk, id);
 	return obj;
 }
 
@@ -157,10 +155,7 @@ struct lazy_object_id_s lazy_database_write_object(lz_db db,
 				obj->_ref_ids[i] = lazy_database_write_object(db, obj->_ref_objs[i]);
 			}
 		});
-		obj->_id.cid = db->chunk->cid;
-		obj->_id.oid = lazy_database_chunk_write_object(db->chunk, obj);
-		obj->_db = db;
-		lz_retain(db);
+		obj->_id = lazy_database_chunk_write_object(db->chunk, obj);
 	}
 	dispatch_semaphore_signal(obj->_semaphore);
 	return obj->_id;

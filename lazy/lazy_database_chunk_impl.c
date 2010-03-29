@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <Block.h>
+#include <assert.h>
 
 #define CHUNK_INIT_LENGTH 1024 * 1024
 
@@ -149,6 +150,8 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 		result->file_size = file_size;
 		result->file = fd;
 		
+        result->database = db;
+        
 		result->chunk = chunk;
 		
 		if (mode == CHUNK_RW) {
@@ -191,12 +194,10 @@ void lazy_database_chunk_sync(struct lazy_database_chunk_s * chunk) {
 #pragma mark -
 #pragma mark Read & Write Object
 
-lz_obj lazy_database_chunk_read_object(struct lazy_database_chunk_s * chunk, uint32_t oid) {
-	struct _object * obj = chunk->data + chunk->index[oid];
-	struct lazy_object_id_s id;
-	id.cid = chunk->cid;
-	id.oid = oid;
-	lz_obj result = lz_obj_unmarshal(id, obj->data + obj->num_ref * sizeof(struct lazy_object_id_s), obj->length, ^(void * d, uint32_t l){
+lz_obj lazy_database_chunk_read_object(struct lazy_database_chunk_s * chunk, struct lazy_object_id_s id) {
+    assert(chunk->cid == id.cid);
+	struct _object * obj = chunk->data + chunk->index[id.oid];
+	lz_obj result = lz_obj_unmarshal(chunk->database, id, obj->data + obj->num_ref * sizeof(struct lazy_object_id_s), obj->length, ^(void * d, uint32_t l){
 		RELEASE(chunk);
 	}, obj->num_ref, (struct lazy_object_id_s *)obj->data);
 	
@@ -207,8 +208,8 @@ lz_obj lazy_database_chunk_read_object(struct lazy_database_chunk_s * chunk, uin
 	return result;
 }
 
-uint32_t lazy_database_chunk_write_object(struct lazy_database_chunk_s * chunk, lz_obj obj) {
-	__block uint32_t result;
+struct lazy_object_id_s lazy_database_chunk_write_object(struct lazy_database_chunk_s * chunk, lz_obj obj) {
+	__block struct lazy_object_id_s id;
 	dispatch_sync(chunk->queue, ^{
         
 		int bytes_to_write = sizeof(uint32_t) * 2 + sizeof(struct lazy_object_id_s) * obj->_number_of_references + obj->_length;
@@ -237,7 +238,13 @@ uint32_t lazy_database_chunk_write_object(struct lazy_database_chunk_s * chunk, 
 		});
 		
 		obj->_data = data->data + sizeof(struct lazy_object_id_s) * obj->_number_of_references;
-		result = oid;
+        
+        obj->_id.oid = oid;
+        obj->_id.cid = chunk->cid;
+        lz_retain(chunk->database);
+        obj->_db = chunk->database;
+        
+		id = obj->_id;
     });
-	return result;
+	return id;
 }
