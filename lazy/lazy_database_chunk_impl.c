@@ -255,10 +255,10 @@ uint32_t lazy_database_chunk_write_object(struct lazy_database_chunk_s * chunk, 
 		chunk->index_end++;
 		chunk->index[chunk->index_end] = chunk->index[oid] + bytes_to_write;
 		
-		obj->_dealloc(obj->_data, obj->_length);
+		obj->_dealloc();
 		Block_release(obj->_dealloc);
 		lazy_database_chunk_retain(chunk);
-		obj->_dealloc = Block_copy(^(void * d, uint32_t l){
+		obj->_dealloc = Block_copy(^(){
 			lazy_database_chunk_release(chunk);
 		});
 		

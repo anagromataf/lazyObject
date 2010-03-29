@@ -49,7 +49,7 @@ struct lazy_object_s {
 	lz_db _db;
     
     // custom deallocator
-    void (^_dealloc)(void * data, uint32_t size);
+    void (^_dealloc)();
     
     // payload
     uint32_t _length;
@@ -62,7 +62,7 @@ struct lazy_object_s {
 lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
 						void * data,
 						uint32_t length,
-						void(^dealloc)(void * data, uint32_t length),
+						void(^dealloc)(),
 						uint16_t num_ref, struct lazy_object_id_s * refs);
 
 #endif // _LAZY_OBJECT_IMPL_H_

@@ -36,8 +36,8 @@ lz_obj create_string_obj(const char * str) {
     char * value = malloc(strlen(str));
     value = strcpy(value, str);
     if (value) {
-        result = lz_obj_new(value, strlen(value) + 1, ^(void * data, uint32_t size){
-            free(data);
+        result = lz_obj_new(value, strlen(value) + 1, ^{
+            free(value);
         }, 0, 0);
         if (!result) {
             free(value);
@@ -56,7 +56,7 @@ START_TEST (test_create_lazy_object_list) {
     
     char * text = "Eine Liste mit A, B und C!";
     
-    lz_obj list = lz_obj_new(text, strlen(text) + 1, ^(void * data, uint32_t size){}, 3, strA, strB, strC);
+    lz_obj list = lz_obj_new(text, strlen(text) + 1, ^{}, 3, strA, strB, strC);
     
     fail_if(list == 0);
     

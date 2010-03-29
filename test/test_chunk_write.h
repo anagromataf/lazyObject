@@ -34,8 +34,8 @@ START_TEST (test_chunk_write) {
 	struct lazy_database_chunk_s * chunk;
 	
     lz_db db = lz_db_open("./tmp/test.db");
-    lz_obj objA = lz_obj_new("Foo", 4, ^(void * data, uint32_t size){}, 0, 0);
-	lz_obj objB = lz_obj_new("Bar", 4, ^(void * data, uint32_t size){}, 0, 0);
+    lz_obj objA = lz_obj_new("Foo", 4, ^{}, 0, 0);
+	lz_obj objB = lz_obj_new("Bar", 4, ^{}, 0, 0);
     
 	chunk = db->chunk;
 	

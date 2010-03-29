@@ -35,7 +35,7 @@ START_TEST (test_root_handle) {
     lz_db_release(db);
     
     // create an object and set it as root for index.
-    lz_obj obj = lz_obj_new("Foo", strlen("Foo"), ^(void * data, uint32_t size){}, 0, 0);
+    lz_obj obj = lz_obj_new("Foo", strlen("Foo") + 1, ^{}, 0, 0);
     lz_root_set(root, obj);
     
     // get the root object and compare it

@@ -35,7 +35,7 @@
 
 lz_obj lz_obj_new(void * data,
 				  uint32_t length,
-				  void(^dealloc)(void * data, uint32_t length),
+				  void(^dealloc)(),
 				  uint16_t num_ref, ...) {
     struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
     if (obj) {
@@ -67,7 +67,7 @@ lz_obj lz_obj_new(void * data,
 			free(obj->_ref_objs);
             free(obj);
             obj = 0;
-            dealloc(data, length);
+            dealloc();
         }
     } else {
         ERR("Could not allocate memory to create a new object.");
@@ -92,7 +92,7 @@ void lz_obj_release(struct lazy_object_s * obj) {
             dispatch_group_async(*lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
                 // dealloc payload
                 DBG("<%i> Calling custom dealloc to free the payload.", obj);
-                obj->_dealloc(obj->_data, obj->_length);
+                obj->_dealloc();
 				Block_release(obj->_dealloc);
 				
                 // release references
@@ -133,7 +133,7 @@ int lz_obj_rc(lz_obj obj) {
 lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
 						void * data,
 						uint32_t length,
-						void(^dealloc)(void * data, uint32_t length),
+						void(^dealloc)(),
 						uint16_t num_ref, struct lazy_object_id_s * refs) {
 	struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
     if (obj) {
@@ -158,7 +158,7 @@ lz_obj lz_obj_unmarshal(struct lazy_object_id_s id,
 			free(obj->_ref_objs);
             free(obj);
             obj = 0;
-            dealloc(data, length);
+            dealloc();
         }
     } else {
         ERR("Could not allocate memory to create a new object.");

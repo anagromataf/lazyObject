@@ -61,7 +61,7 @@ void lz_wait_for_completion();
 
 lz_obj lz_obj_new(void * data,
                   uint32_t length,
-                  void(^dealloc)(void * data, uint32_t length),
+                  void(^dealloc)(),
                   uint16_t num_ref, ...);
 
 void lz_obj_retain(lz_obj obj);
