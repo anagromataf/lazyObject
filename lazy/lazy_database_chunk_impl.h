@@ -53,7 +53,7 @@ struct lazy_database_chunk_s {
     // weak ref to the database
     lz_db database;
 	
-	struct _chunk_header_s * chunk;
+	struct _chunk_header_s * chunk_data;
 	
 	int index_length;
 	int index_end;

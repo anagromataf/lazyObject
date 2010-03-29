@@ -37,11 +37,8 @@
 struct lazy_database_s {
     LAZY_BASE_HEAD
     
-    char filename[MAXPATHLEN];
-    
-    // version of the database
     int version;
-	
+    char filename[MAXPATHLEN];
 	struct lazy_database_chunk_s * chunk;
 };
 

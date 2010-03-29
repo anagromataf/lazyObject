@@ -134,7 +134,7 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
                 lazy_database_chunk_sync(result);
             }
             
-            munmap(result->chunk, result->file_size);
+            munmap(result->chunk_data, result->file_size);
             fclose(result->file);
             
             DBG("<%i> Dealloc memory.", result);
@@ -152,7 +152,7 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 		
         result->database = db;
         
-		result->chunk = chunk;
+		result->chunk_data = chunk;
 		
 		if (mode == CHUNK_RW) {
 			result->data = (void*)chunk + sizeof(struct _chunk_header_s);
@@ -181,12 +181,12 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 
 void lazy_database_chunk_sync(struct lazy_database_chunk_s * chunk) {
 	dispatch_sync(chunk->queue, ^{
-		chunk->chunk->index_length = chunk->index_end;
-		chunk->chunk->index_offset = chunk->index[chunk->index_end];
+		chunk->chunk_data->index_length = chunk->index_end;
+		chunk->chunk_data->index_offset = chunk->index[chunk->index_end];
 		memcpy(chunk->data + chunk->index[chunk->index_end],
 			   chunk->index,
-			   sizeof(uint32_t) * chunk->chunk->index_length);
-		msync(chunk->chunk, chunk->file_size, MS_SYNC);
+			   sizeof(uint32_t) * chunk->chunk_data->index_length);
+		msync(chunk->chunk_data, chunk->file_size, MS_SYNC);
     });
 }
 

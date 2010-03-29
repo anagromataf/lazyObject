@@ -204,17 +204,17 @@ lz_root lz_db_root(lz_db db, const char * name) {
     struct lazy_root_s * root = malloc(sizeof(struct lazy_root_s));
     if (root) {
         LAZY_BASE_INIT(root, ^{
-            if (root->_obj) {
-                lz_release(root->_obj);
+            if (root->root_obj) {
+                lz_release(root->root_obj);
             }
-            lz_release(root->_database);
+            lz_release(root->database);
         });
-		strcpy(root->_path, filename);
+		strcpy(root->filename, filename);
 		root->_exsits = exsits;
-		root->_obj_id = root_id;
+		root->root_obj_id = root_id;
         lz_retain(db);
-        root->_database = db;
-        root->_obj = 0;
+        root->database = db;
+        root->root_obj = 0;
         DBG("<%i> New root handle created.", root);
     } else {
         ERR("Could not allocate memory to create a new root handle.");
