@@ -23,7 +23,7 @@ lz_obj obj = lz_obj_new(myData, myLength, ^(void * data, uint32_t size){
 // use the object handle
 
 // release the reference if not needed anymore
-lz_obj_release(obj);
+lz_release(obj);
 
 // if the retain count reaches 0, the custom block (free(data);) is called and
 // the object handle is deallocated
@@ -73,8 +73,8 @@ lz_obj_sync(dict, ^(void * data, uint32_t size){
 // use key and value
 
 // release the references
-lz_obj_release(key);
-lz_obj_release(value);
+lz_release(key);
+lz_release(value);
 </pre>
 
 After having completed this step, we have the references of the key and the value of the fourth element in the mapping. If these references are not needed anymore, we have to release them.
