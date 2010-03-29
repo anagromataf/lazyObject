@@ -1,8 +1,8 @@
 /*
- *  test_use_async.h
+ *  lazy_base_impl.h
  *  lazyObject
  *
- *  Created by Tobias Kräntzer on 22.03.10.
+ *  Created by Tobias Kräntzer on 29.03.10.
  *  Copyright 2010 Fraunhofer Institut für Software- und Systemtechnik ISST.
  *
  *  This file is part of lazyObject.
@@ -21,31 +21,21 @@
  *	along with lazyObject.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TEST_USE_ASYNC_H_
-#define _TEST_USE_ASYNC_H_
+#ifndef _LAZY_BASE_IMPL_H_
+#define _LAZY_BASE_IMPL_H_
 
-#include <check.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <lazy.h>
+#include <dispatch/dispatch.h>
+#include <Block.h>
 
-START_TEST (test_use_async) {
-    char * text = "Ein Testtext!";
-    
-    __block int dealloc_called = 0;
-    
-    lz_obj obj = lz_obj_new(text, strlen(text) + 1, ^{dealloc_called = 1;}, 0, 0);
-    
-    fail_if(obj == 0);
-    fail_unless(lz_rc(obj) == 1);
-    
-    lz_obj_async(obj, ^(void * data, uint32_t size){
-        fail_unless(strcmp(data, text) == 0);
-    });
-    
-    lz_release(obj);
-    lz_wait_for_completion();
-    fail_if(dealloc_called == 0);
-} END_TEST
+#define RETAIN(obj) lz_retain((struct lazy_base_s *)obj)
+#define RELEASE(obj) lz_release((struct lazy_base_s *)obj)
 
-#endif // _TEST_USE_ASYNC_H_
+#define LAZY_BASE_HEAD dispatch_queue_t queue; int rc;void (^dealloc)();
+#define LAZY_BASE_INIT(obj, d) obj->queue = dispatch_queue_create(0, 0); obj->rc = 1; obj->dealloc = Block_copy(d);
+
+struct lazy_base_s {
+    LAZY_BASE_HEAD
+};
+
+#endif // _LAZY_BASE_IMPL_H_

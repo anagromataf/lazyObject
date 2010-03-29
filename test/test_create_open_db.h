@@ -33,12 +33,12 @@ START_TEST (test_create_open_db) {
 	
 	db = lz_db_open("./tmp/test.db");
 	fail_unless(lz_db_version(db) == 1);
-	lz_db_release(db);
+	lz_release(db);
 	lz_wait_for_completion();
 	
 	db = lz_db_open("./tmp/test.db");
 	fail_unless(lz_db_version(db) == 1);
-	lz_db_release(db);
+	lz_release(db);
 	lz_wait_for_completion();
 	
     lz_wait_for_completion();

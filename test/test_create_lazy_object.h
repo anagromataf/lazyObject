@@ -38,21 +38,21 @@ START_TEST (test_create_lazy_object) {
     lz_obj obj = lz_obj_new(text, strlen(text) + 1, ^{dealloc_called = 1;}, 0, 0);
     
     fail_if(obj == 0);
-    fail_unless(lz_obj_rc(obj) == 1);
+    fail_unless(lz_rc(obj) == 1);
     
     lz_obj_sync(obj, ^(void * data, uint32_t size){
         fail_unless(strcmp(data, text) == 0);
     });
     
-    lz_obj_retain(obj);
+    lz_retain(obj);
     lz_wait_for_completion();
-    fail_unless(lz_obj_rc(obj) == 2);
+    fail_unless(lz_rc(obj) == 2);
     
-    lz_obj_release(obj);
+    lz_release(obj);
     lz_wait_for_completion();
-    fail_unless(lz_obj_rc(obj) == 1);
+    fail_unless(lz_rc(obj) == 1);
     
-    lz_obj_release(obj);
+    lz_release(obj);
     lz_wait_for_completion();
     fail_if(dealloc_called == 0);
     

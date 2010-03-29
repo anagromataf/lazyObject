@@ -30,6 +30,13 @@ typedef struct lazy_object_s * lz_obj;
 typedef struct lazy_database_s * lz_db;
 typedef struct lazy_root_s *lz_root;
 
+typedef union {
+    struct lazy_base_s * base;
+    struct lazy_object_s * obj;
+    struct lazy_database_s * db;
+    struct lazy_root_s * root;
+} lz_base __attribute__((transparent_union));
+
 #pragma mark -
 #pragma mark Logging
 
@@ -57,17 +64,20 @@ void lz_set_logger(void (^)(int level, const char * msg, ...));
 void lz_wait_for_completion();
 
 #pragma mark -
+#pragma mark Memory Management
+
+void lz_retain(lz_base obj);
+void lz_release(lz_base obj);
+
+int lz_rc(lz_base obj);
+
+#pragma mark -
 #pragma mark Object Livecycle
 
 lz_obj lz_obj_new(void * data,
                   uint32_t length,
                   void(^dealloc)(),
                   uint16_t num_ref, ...);
-
-void lz_obj_retain(lz_obj obj);
-void lz_obj_release(lz_obj obj);
-
-int lz_obj_rc(lz_obj obj);
 
 #pragma mark -
 #pragma mark Check Same Object
@@ -93,9 +103,6 @@ lz_obj lz_obj_ref(lz_obj obj, uint16_t pos);
 
 lz_db lz_db_open(const char * path);
 
-void lz_db_retain(lz_db db);
-void lz_db_release(lz_db db);
-
 #pragma mark -
 #pragma mark Database Version
 
@@ -105,12 +112,6 @@ int lz_db_version(lz_db db);
 #pragma mark Access Root Handle
 
 lz_root lz_db_root(lz_db db, const char * name);
-
-#pragma mark -
-#pragma mark Root Handle Livecycle
-
-void lz_root_retain(lz_root root);
-void lz_root_release(lz_root root);
 
 #pragma mark -
 #pragma mark Root Objects

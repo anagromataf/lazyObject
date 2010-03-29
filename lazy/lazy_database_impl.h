@@ -31,11 +31,11 @@
 #include <dispatch/dispatch.h>
 
 #include "lazy_database_chunk_impl.h"
+#include "lazy_base_impl.h"
 #include "lazy_object_impl.h"
 
 struct lazy_database_s {
-    int retain_count;
-    dispatch_queue_t db_queue;
+    LAZY_BASE_HEAD
     
     char db_path[MAXPATHLEN];
     

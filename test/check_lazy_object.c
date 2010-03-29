@@ -57,7 +57,7 @@ Suite * lazy_object_suite(void) {
     tcase_add_test(tc_core, test_create_lazy_object_list);
     tcase_add_test(tc_core, test_use_async);
     tcase_add_test(tc_core, test_root_handle);
-	tcase_add_test(tc_core, test_create_open_db);
+    tcase_add_test(tc_core, test_create_open_db);
     tcase_add_test(tc_core, test_chunk_write);
 	
     suite_add_tcase(s, tc_core);

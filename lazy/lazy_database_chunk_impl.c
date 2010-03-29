@@ -24,6 +24,7 @@
 #include "lazy_database_chunk_impl.h"
 #include "lazy_object_dispatch_group.h"
 #include "lazy_object_impl.h"
+#include "lazy_base_impl.h"
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -127,8 +128,19 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 	
 	struct lazy_database_chunk_s * result = malloc(sizeof(struct lazy_database_chunk_s));
 	if (result) {
-		result->retain_count = 1;
-		result->queue = dispatch_queue_create(0, 0);
+        LAZY_BASE_INIT(result, ^{
+            if (result->mode == CHUNK_RW) {
+                lazy_database_chunk_sync(result);
+            }
+            
+            munmap(result->chunk, result->file_size);
+            fclose(result->file);
+            
+            DBG("<%i> Dealloc memory.", result);
+            if (result->mode == CHUNK_RW) {
+                free(result->index);
+            }
+        });
 		
 		result->mode = mode;
 		
@@ -161,44 +173,6 @@ struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 	return result;
 }
 
-
-void lazy_database_chunk_retain(struct lazy_database_chunk_s * chunk) {
-	dispatch_group_async(*lazy_object_get_dispatch_group(), chunk->queue, ^{
-        chunk->retain_count++;
-        DBG("<%i> Retain count increased.", chunk);
-    });
-}
-
-
-void lazy_database_chunk_release(struct lazy_database_chunk_s * chunk) {
-	dispatch_group_async(*lazy_object_get_dispatch_group(), chunk->queue, ^{
-        if (chunk->retain_count > 1) {
-            chunk->retain_count--;
-            DBG("<%i> Retain count decreased.", chunk);
-        } else {
-            DBG("<%i> Retain count of chunk reaches 0.", chunk);
-            dispatch_group_async(*lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
-                // release dispatch queue and free memory
-				
-				if (chunk->mode == CHUNK_RW) {
-					lazy_database_chunk_sync(chunk);
-				}
-				
-				munmap(chunk->chunk, chunk->file_size);
-				fclose(chunk->file);
-				
-				DBG("<%i> Releasing chunk dispatch queue.", chunk);
-                dispatch_release(chunk->queue);
-                DBG("<%i> Dealloc memory.", chunk);
-				if (chunk->mode == CHUNK_RW) {
-					free(chunk->index);
-				}
-                free(chunk);
-            });
-        };
-    });
-}
-
 #pragma mark -
 #pragma mark Sync Chunk
 
@@ -223,11 +197,11 @@ lz_obj lazy_database_chunk_read_object(struct lazy_database_chunk_s * chunk, uin
 	id.cid = chunk->cid;
 	id.oid = oid;
 	lz_obj result = lz_obj_unmarshal(id, obj->data + obj->num_ref * sizeof(struct lazy_object_id_s), obj->length, ^(void * d, uint32_t l){
-		lazy_database_chunk_release(chunk);
+		RELEASE(chunk);
 	}, obj->num_ref, (struct lazy_object_id_s *)obj->data);
 	
 	if (result) {
-		lazy_database_chunk_retain(chunk);
+		RETAIN(chunk);
 	}
 	
 	return result;
@@ -255,11 +229,11 @@ uint32_t lazy_database_chunk_write_object(struct lazy_database_chunk_s * chunk, 
 		chunk->index_end++;
 		chunk->index[chunk->index_end] = chunk->index[oid] + bytes_to_write;
 		
-		obj->_dealloc();
-		Block_release(obj->_dealloc);
-		lazy_database_chunk_retain(chunk);
-		obj->_dealloc = Block_copy(^(){
-			lazy_database_chunk_release(chunk);
+		obj->payload_dealloc();
+		Block_release(obj->payload_dealloc);
+		RETAIN(chunk);
+		obj->payload_dealloc = Block_copy(^(){
+			RELEASE(chunk);
 		});
 		
 		obj->_data = data->data + sizeof(struct lazy_object_id_s) * obj->_number_of_references;

@@ -23,6 +23,8 @@
 		F643B8FF115B829700832707 /* libcheck.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F643B8FE115B829700832707 /* libcheck.dylib */; };
 		F66547A7115FB22000ACAA78 /* lazy_database_chunk_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F66547A5115FB22000ACAA78 /* lazy_database_chunk_impl.h */; };
 		F66547A8115FB22000ACAA78 /* lazy_database_chunk_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F66547A6115FB22000ACAA78 /* lazy_database_chunk_impl.c */; };
+		F69BD6E11160A0BE0061ECD8 /* lazy_base_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F69BD6DF1160A0BE0061ECD8 /* lazy_base_impl.h */; };
+		F69BD6E21160A0BE0061ECD8 /* lazy_base_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = F69BD6E01160A0BE0061ECD8 /* lazy_base_impl.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +63,8 @@
 		F66547A5115FB22000ACAA78 /* lazy_database_chunk_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_database_chunk_impl.h; path = lazy/lazy_database_chunk_impl.h; sourceTree = "<group>"; };
 		F66547A6115FB22000ACAA78 /* lazy_database_chunk_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_database_chunk_impl.c; path = lazy/lazy_database_chunk_impl.c; sourceTree = "<group>"; };
 		F665497C115FD9E000ACAA78 /* test_chunk_write.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_chunk_write.h; path = test/test_chunk_write.h; sourceTree = "<group>"; };
+		F69BD6DF1160A0BE0061ECD8 /* lazy_base_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lazy_base_impl.h; path = lazy/lazy_base_impl.h; sourceTree = "<group>"; };
+		F69BD6E01160A0BE0061ECD8 /* lazy_base_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_base_impl.c; path = lazy/lazy_base_impl.c; sourceTree = "<group>"; };
 		F6A1E459115E25BE00A49EE8 /* test_create_open_db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_create_open_db.h; path = test/test_create_open_db.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -117,6 +121,8 @@
 		F643B8D9115B81C800832707 /* Lib Lazy */ = {
 			isa = PBXGroup;
 			children = (
+				F69BD6DF1160A0BE0061ECD8 /* lazy_base_impl.h */,
+				F69BD6E01160A0BE0061ECD8 /* lazy_base_impl.c */,
 				F643B8DA115B81DD00832707 /* lazy_database_impl.c */,
 				F643B8DB115B81DD00832707 /* lazy_database_impl.h */,
 				F643B8DC115B81DD00832707 /* lazy_logging_impl.c */,
@@ -171,6 +177,7 @@
 				F643B8EB115B81DD00832707 /* lazy_object_impl.h in Headers */,
 				F643B8ED115B81DD00832707 /* lazy_root_impl.h in Headers */,
 				F66547A7115FB22000ACAA78 /* lazy_database_chunk_impl.h in Headers */,
+				F69BD6E11160A0BE0061ECD8 /* lazy_base_impl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,6 +250,7 @@
 				F643B8EA115B81DD00832707 /* lazy_object_impl.c in Sources */,
 				F643B8EC115B81DD00832707 /* lazy_root_impl.c in Sources */,
 				F66547A8115FB22000ACAA78 /* lazy_database_chunk_impl.c in Sources */,
+				F69BD6E21160A0BE0061ECD8 /* lazy_base_impl.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

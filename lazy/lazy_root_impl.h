@@ -29,12 +29,12 @@
 #include <sys/param.h>
 #include <dispatch/dispatch.h>
 
+#include "lazy_base_impl.h"
 #include "lazy_database_impl.h"
 #include "lazy_object_impl.h"
 
 struct lazy_root_s {
-    int _retain_count;
-    dispatch_queue_t _root_queue;
+    LAZY_BASE_HEAD
 
 	char _path[MAXPATHLEN];
 	

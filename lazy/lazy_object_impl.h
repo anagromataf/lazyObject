@@ -25,8 +25,9 @@
 #define _LAZY_OBJECT_IMPL_H_
 
 #include <lazy.h>
-
 #include <dispatch/dispatch.h>
+
+#include "lazy_base_impl.h"
 
 struct lazy_object_id_s {
 	uint32_t cid;
@@ -34,9 +35,7 @@ struct lazy_object_id_s {
 };
 
 struct lazy_object_s {
-    // reference livecycle
-    int _retain_count;
-    dispatch_queue_t _obj_queue;
+    LAZY_BASE_HEAD
 	
 	int _temporary;
 	struct lazy_object_id_s _id;
@@ -49,7 +48,7 @@ struct lazy_object_s {
 	lz_db _db;
     
     // custom deallocator
-    void (^_dealloc)();
+    void (^payload_dealloc)();
     
     // payload
     uint32_t _length;

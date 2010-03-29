@@ -45,9 +45,9 @@ START_TEST (test_chunk_write) {
 	int oidB = lazy_database_chunk_write_object(chunk, objB);
 	fail_unless(oidB == 1);
 	
-	lz_obj_release(objA);
-	lz_obj_release(objB);
-	lz_db_release(db);
+	lz_release(objA);
+	lz_release(objB);
+	lz_release(db);
     lz_wait_for_completion();
 	
 	
@@ -65,9 +65,9 @@ START_TEST (test_chunk_write) {
         fail_unless(strcmp(data, "Bar") == 0);
     });
     
-	lz_obj_release(objA);
-	lz_obj_release(objB);
-	lz_db_release(db);
+	lz_release(objA);
+	lz_release(objB);
+	lz_release(db);
     lz_wait_for_completion();
 	
 } END_TEST

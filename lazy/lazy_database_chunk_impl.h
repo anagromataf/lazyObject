@@ -31,6 +31,7 @@
 
 #include <dispatch/dispatch.h>
 
+#include "lazy_base_impl.h"
 #include "lazy_database_impl.h"
 
 enum lazy_database_chunk_mode {
@@ -39,8 +40,7 @@ enum lazy_database_chunk_mode {
 };
 
 struct lazy_database_chunk_s {
-	int retain_count;
-	dispatch_queue_t queue;
+    LAZY_BASE_HEAD
 	
 	enum lazy_database_chunk_mode mode;
 	
@@ -63,9 +63,6 @@ struct lazy_database_chunk_s {
 struct lazy_database_chunk_s * lazy_database_chunk_open(lz_db db,
 														uint32_t cid,
 														enum lazy_database_chunk_mode mode);
-
-void lazy_database_chunk_retain(struct lazy_database_chunk_s * chunk);
-void lazy_database_chunk_release(struct lazy_database_chunk_s * chunk);
 
 #pragma mark -
 #pragma mark Read & Write Object

@@ -60,15 +60,14 @@ START_TEST (test_create_lazy_object_list) {
     
     fail_if(list == 0);
     
-    lz_obj_release(strA);
-    lz_obj_release(strB);
-    lz_obj_release(strC);
-    
+    lz_release(strA);
+    lz_release(strB);
+    lz_release(strC);
 	
 	lz_db db = lz_db_open("./tmp/test.db");
 	struct lazy_object_id_s oid = lazy_database_write_object(db, list);
-	lz_obj_release(list);
-	lz_db_release(db);
+	lz_release(list);
+	lz_release(db);
 	lz_wait_for_completion();
 	
 	db = lz_db_open("./tmp/test.db");
@@ -98,8 +97,8 @@ START_TEST (test_create_lazy_object_list) {
         }
     });
     
-    lz_obj_release(list);
-    lz_db_release(db);
+    lz_release(list);
+    lz_release(db);
 	lz_wait_for_completion();
     
 } END_TEST

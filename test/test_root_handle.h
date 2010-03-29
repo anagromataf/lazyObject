@@ -32,7 +32,7 @@ START_TEST (test_root_handle) {
     // setup db and create a root handle
     lz_db db = lz_db_open("./tmp/test.db");
     lz_root root = lz_db_root(db, "index");
-    lz_db_release(db);
+    lz_release(db);
     
     // create an object and set it as root for index.
     lz_obj obj = lz_obj_new("Foo", strlen("Foo") + 1, ^{}, 0, 0);
@@ -44,14 +44,14 @@ START_TEST (test_root_handle) {
     fail_unless(lz_obj_same(obj, rootObj));
     
     // release the objects
-    lz_obj_release(obj);
-    lz_obj_release(rootObj);
+    lz_release(obj);
+    lz_release(rootObj);
     
     lz_root_del(root);
     fail_unless(lz_root_get(root) == 0);
     
     // release the other handles
-    lz_root_release(root);
+    lz_release(root);
     lz_wait_for_completion();
 
 } END_TEST

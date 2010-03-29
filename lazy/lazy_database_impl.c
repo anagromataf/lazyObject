@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <Block.h>
 
 // OS X only
 #include <CommonCrypto/CommonDigest.h>
@@ -115,45 +116,17 @@ lz_db lz_db_open(const char * path) {
     // create handle
     struct lazy_database_s * db = malloc(sizeof(struct lazy_database_s));
     if (db) {
-        db->db_queue = dispatch_queue_create(NULL, NULL);
-        db->retain_count = 1;
-        
+        LAZY_BASE_INIT(db, ^{
+            RELEASE(db->chunk);
+        });
         db->version = version;
         strcpy(db->db_path, path);
-		
 		db->chunk = lazy_database_chunk_open(db, 1, CHUNK_RW);
-        
         DBG("<%i> New database handle created.", db);
     } else {
         ERR("Could not allocate memory to create a new database handle.");
     }
     return db;
-}
-
-void lz_db_retain(lz_db db) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), db->db_queue, ^{
-        db->retain_count++;
-        DBG("<%i> Retain count increased.", db);
-    });
-}
-
-void lz_db_release(lz_db db) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), db->db_queue, ^{
-        if (db->retain_count > 1) {
-            db->retain_count--;
-            DBG("<%i> Retain count decreased.", db);
-        } else {
-            DBG("<%i> Retain count reaches 0.", db);
-            dispatch_group_async(*lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
-                // release dispatch queue and free memory
-				lazy_database_chunk_release(db->chunk);
-                DBG("<%i> Releasing database dispatch queue.", db);
-                dispatch_release(db->db_queue);
-                DBG("<%i> Dealloc memory.", db);
-                free(db);
-            });
-        };
-    });
 }
 
 #pragma mark -
@@ -171,7 +144,7 @@ lz_obj lazy_database_read_object(lz_db db,
 	assert(id.cid == 1);
 	lz_obj obj = lazy_database_chunk_read_object(db->chunk, id.oid);
 	obj->_db = db;
-	lz_db_retain(db);
+	lz_retain(db);
 	return obj;
 }
 
@@ -187,7 +160,7 @@ struct lazy_object_id_s lazy_database_write_object(lz_db db,
 		obj->_id.cid = db->chunk->cid;
 		obj->_id.oid = lazy_database_chunk_write_object(db->chunk, obj);
 		obj->_db = db;
-		lz_db_retain(db);
+		lz_retain(db);
 	}
 	dispatch_semaphore_signal(obj->_semaphore);
 	return obj->_id;
@@ -235,15 +208,16 @@ lz_root lz_db_root(lz_db db, const char * name) {
 	
     struct lazy_root_s * root = malloc(sizeof(struct lazy_root_s));
     if (root) {
-        root->_root_queue = dispatch_queue_create(NULL, NULL);
-        root->_retain_count = 1;
-		
+        LAZY_BASE_INIT(root, ^{
+            if (root->_obj) {
+                lz_release(root->_obj);
+            }
+            lz_release(root->_database);
+        });
 		strcpy(root->_path, filename);
-		
 		root->_exsits = exsits;
 		root->_obj_id = root_id;
-		
-        lz_db_retain(db);
+        lz_retain(db);
         root->_database = db;
         root->_obj = 0;
         DBG("<%i> New root handle created.", root);
