@@ -148,17 +148,17 @@ lz_obj lazy_database_read_object(lz_db db,
 
 struct lazy_object_id_s lazy_database_write_object(lz_db db,
 												   lz_obj obj) {
-	dispatch_semaphore_wait(obj->_semaphore, DISPATCH_TIME_FOREVER);
-	if (obj->_temporary) {
-		dispatch_apply(obj->_number_of_references, dispatch_get_global_queue(0, 0), ^(size_t i){
-			if ((obj->_ref_ids[i].cid) == 0) {
-				obj->_ref_ids[i] = lazy_database_write_object(db, obj->_ref_objs[i]);
+	dispatch_semaphore_wait(obj->write_lock, DISPATCH_TIME_FOREVER);
+	if (obj->is_temp) {
+		dispatch_apply(obj->num_references, dispatch_get_global_queue(0, 0), ^(size_t i){
+			if ((obj->reference_ids[i].cid) == 0) {
+				obj->reference_ids[i] = lazy_database_write_object(db, obj->reference_objs[i]);
 			}
 		});
-		obj->_id = lazy_database_chunk_write_object(db->chunk, obj);
+		obj->id = lazy_database_chunk_write_object(db->chunk, obj);
 	}
-	dispatch_semaphore_signal(obj->_semaphore);
-	return obj->_id;
+	dispatch_semaphore_signal(obj->write_lock);
+	return obj->id;
 }
 
 #pragma mark -

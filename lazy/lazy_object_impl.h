@@ -37,22 +37,21 @@ struct lazy_object_id_s {
 struct lazy_object_s {
     LAZY_BASE_HEAD
 	
-	int _temporary;
-	struct lazy_object_id_s _id;
-	dispatch_semaphore_t _semaphore;
+    // object persistence
+    struct lazy_object_id_s id;
+	int is_temp;
+    lz_db database;
+	dispatch_semaphore_t write_lock;
     
     // references to other objects
-    uint32_t _number_of_references;
-	struct lazy_object_id_s * _ref_ids;
-	struct lazy_object_s ** _ref_objs;
-	lz_db _db;
+    uint32_t num_references;
+	struct lazy_object_id_s * reference_ids;
+	struct lazy_object_s ** reference_objs;
     
-    // custom deallocator
+    // object payload
     void (^payload_dealloc)();
-    
-    // payload
-    uint32_t _length;
-    void * _data;
+    uint32_t payload_length;
+    void * payload_data;
 };
 
 #pragma mark -

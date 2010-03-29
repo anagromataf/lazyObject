@@ -41,49 +41,49 @@ lz_obj lz_obj_new(void * data,
     if (obj) {
         LAZY_BASE_INIT(obj, ^{
             // release references
-            DBG("<%i> Releasing %i references.", obj, obj->_number_of_references);
+            DBG("<%i> Releasing %i references.", obj, obj->num_references);
             int loop;
-            for (loop=0; loop < obj->_number_of_references; loop++) {
-                DBG("<%i> Releasing reference to <%i>.", obj, obj->_ref_objs[loop]);
-                lz_release(obj->_ref_objs[loop]);
+            for (loop=0; loop < obj->num_references; loop++) {
+                DBG("<%i> Releasing reference to <%i>.", obj, obj->reference_objs[loop]);
+                lz_release(obj->reference_objs[loop]);
             }
             DBG("<%i> References released.", obj);
-            if (obj->_db) {
-                DBG("<%i> Releasing reference to database <%i>.", obj, obj->_db);
-                lz_release(obj->_db);
+            if (obj->database) {
+                DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
+                lz_release(obj->database);
             } else {
                 DBG("<%i> No database handle to release.", obj);
             }
-            dispatch_release(obj->_semaphore);
+            dispatch_release(obj->write_lock);
             obj->payload_dealloc();
             Block_release(obj->payload_dealloc);
-            free(obj->_ref_ids);
-            free(obj->_ref_objs);
+            free(obj->reference_ids);
+            free(obj->reference_objs);
         });
         // set up references
-        obj->_number_of_references = num_ref;
-        obj->_ref_objs = calloc(num_ref, sizeof(struct lazy_object_s));
-		obj->_ref_ids = calloc(num_ref, sizeof(struct lazy_object_id_s));
-        if (obj->_ref_objs && obj->_ref_ids) {
+        obj->num_references = num_ref;
+        obj->reference_objs = calloc(num_ref, sizeof(struct lazy_object_s));
+		obj->reference_ids = calloc(num_ref, sizeof(struct lazy_object_id_s));
+        if (obj->reference_objs && obj->reference_ids) {
             va_list refs;
             va_start(refs, num_ref);
             int loop;
             for (loop = 0; loop < num_ref; loop++) {
                 struct lazy_object_s * ref = va_arg(refs, struct lazy_object_s *);
                 lz_retain(ref);
-                obj->_ref_objs[loop] = ref;
+                obj->reference_objs[loop] = ref;
             }
             va_end(refs);
-            obj->_semaphore = dispatch_semaphore_create(1);
-            obj->_temporary = 1;
-            obj->_length = length;
-            obj->_data = data;
+            obj->write_lock = dispatch_semaphore_create(1);
+            obj->is_temp = 1;
+            obj->payload_length = length;
+            obj->payload_data = data;
             obj->payload_dealloc = Block_copy(dealloc);
-            obj->_db = 0;
+            obj->database = 0;
             DBG("<%i> New object created.", obj);
         } else {
-			free(obj->_ref_ids);
-			free(obj->_ref_objs);
+			free(obj->reference_ids);
+			free(obj->reference_objs);
             free(obj);
             obj = 0;
             dealloc();
@@ -107,43 +107,43 @@ lz_obj lz_obj_unmarshal(lz_db db,
     if (obj) {
         LAZY_BASE_INIT(obj, ^{
             // release references
-            DBG("<%i> Releasing %i references.", obj, obj->_number_of_references);
+            DBG("<%i> Releasing %i references.", obj, obj->num_references);
             int loop;
-            for (loop=0; loop < obj->_number_of_references; loop++) {
-                DBG("<%i> Releasing reference to <%i>.", obj, obj->_ref_objs[loop]);
-                lz_release(obj->_ref_objs[loop]);
+            for (loop=0; loop < obj->num_references; loop++) {
+                DBG("<%i> Releasing reference to <%i>.", obj, obj->reference_objs[loop]);
+                lz_release(obj->reference_objs[loop]);
             }
             DBG("<%i> References released.", obj);
-            if (obj->_db) {
-                DBG("<%i> Releasing reference to database <%i>.", obj, obj->_db);
-                lz_release(obj->_db);
+            if (obj->database) {
+                DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
+                lz_release(obj->database);
             } else {
                 DBG("<%i> No database handle to release.", obj);
             }
-            dispatch_release(obj->_semaphore);
+            dispatch_release(obj->write_lock);
             obj->payload_dealloc();
             Block_release(obj->payload_dealloc);
-            free(obj->_ref_ids);
-            free(obj->_ref_objs);
+            free(obj->reference_ids);
+            free(obj->reference_objs);
         });
         // set up references
-        obj->_number_of_references = num_ref;
-        obj->_ref_objs = calloc(num_ref, sizeof(struct lazy_object_s));
-		obj->_ref_ids = calloc(num_ref, sizeof(struct lazy_object_id_s));
-        if (obj->_ref_objs && obj->_ref_ids) {
-			memcpy(obj->_ref_ids, refs, sizeof(struct lazy_object_id_s) * num_ref);
-            obj->_semaphore = dispatch_semaphore_create(1);
-            obj->_temporary = 0;
-            obj->_id = id;
-            obj->_length = length;
-            obj->_data = data;
+        obj->num_references = num_ref;
+        obj->reference_objs = calloc(num_ref, sizeof(struct lazy_object_s));
+		obj->reference_ids = calloc(num_ref, sizeof(struct lazy_object_id_s));
+        if (obj->reference_objs && obj->reference_ids) {
+			memcpy(obj->reference_ids, refs, sizeof(struct lazy_object_id_s) * num_ref);
+            obj->write_lock = dispatch_semaphore_create(1);
+            obj->is_temp = 0;
+            obj->id = id;
+            obj->payload_length = length;
+            obj->payload_data = data;
             obj->payload_dealloc = Block_copy(dealloc);
             lz_retain(db);
-            obj->_db = db;
+            obj->database = db;
             DBG("<%i> New object created.", obj);
         } else {
-			free(obj->_ref_ids);
-			free(obj->_ref_objs);
+			free(obj->reference_ids);
+			free(obj->reference_objs);
             free(obj);
             obj = 0;
             dealloc();
@@ -169,7 +169,7 @@ int lz_obj_same(lz_obj obj1, lz_obj obj2) {
 #pragma mark Access Object Payload
 
 uint16_t lz_obj_num_ref(lz_obj obj) {
-    return obj->_number_of_references;
+    return obj->num_references;
 }
 
 lz_obj lz_obj_ref(lz_obj obj, uint16_t pos) {
@@ -181,17 +181,17 @@ lz_obj lz_obj_ref(lz_obj obj, uint16_t pos) {
 }
 
 lz_obj lz_obj_weak_ref(lz_obj obj, uint16_t pos) {
-    if (obj->_number_of_references > pos) {
-        lz_obj result = obj->_ref_objs[pos];
+    if (obj->num_references > pos) {
+        lz_obj result = obj->reference_objs[pos];
         if (result) {
             return result;
         } else {
-			lz_obj o = lazy_database_read_object(obj->_db, obj->_ref_ids[pos]);
-            (obj->_ref_objs[pos]) = o;
+			lz_obj o = lazy_database_read_object(obj->database, obj->reference_ids[pos]);
+            (obj->reference_objs[pos]) = o;
 			return o;
         }
     } else {
-        DBG("<%i> Index error. (number of references: %i; requested position: %i)", obj, obj->_number_of_references, pos);
+        DBG("<%i> Index error. (number of references: %i; requested position: %i)", obj, obj->num_references, pos);
         return 0;
     }
 }
@@ -201,13 +201,13 @@ lz_obj lz_obj_weak_ref(lz_obj obj, uint16_t pos) {
 
 void lz_obj_sync(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
     DBG("<%i> Applying synchronous 'payload block'.", obj);
-    handle(obj->_data, obj->_length);
+    handle(obj->payload_data, obj->payload_length);
 }
 
 void lz_obj_async(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
     dispatch_group_async(*lazy_object_get_dispatch_group(), obj->queue, ^{
         DBG("<%i> Applying asynchronous 'payload function'.", obj);
-        handle(obj->_data, obj->_length);
+        handle(obj->payload_data, obj->payload_length);
     });
 }
 

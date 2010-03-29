@@ -212,19 +212,19 @@ struct lazy_object_id_s lazy_database_chunk_write_object(struct lazy_database_ch
 	__block struct lazy_object_id_s id;
 	dispatch_sync(chunk->queue, ^{
         
-		int bytes_to_write = sizeof(uint32_t) * 2 + sizeof(struct lazy_object_id_s) * obj->_number_of_references + obj->_length;
+		int bytes_to_write = sizeof(uint32_t) * 2 + sizeof(struct lazy_object_id_s) * obj->num_references + obj->payload_length;
 		
 		// TODO: check file size and call ftruncate if needed
 		uint32_t oid = chunk->index_end;
 		struct _object * data = chunk->data + chunk->index[chunk->index_end];
-		data->length = obj->_length;
-		data->num_ref = obj->_number_of_references;
+		data->length = obj->payload_length;
+		data->num_ref = obj->num_references;
 		memcpy(data->data,
-			   obj->_ref_ids,
-			   sizeof(struct lazy_object_id_s) * obj->_number_of_references);
-		memcpy(data->data + sizeof(struct lazy_object_id_s) * obj->_number_of_references,
-			   obj->_data,
-			   obj->_length);
+			   obj->reference_ids,
+			   sizeof(struct lazy_object_id_s) * obj->num_references);
+		memcpy(data->data + sizeof(struct lazy_object_id_s) * obj->num_references,
+			   obj->payload_data,
+			   obj->payload_length);
 		
 		// TODO: extend index list if needed
 		chunk->index_end++;
@@ -237,14 +237,14 @@ struct lazy_object_id_s lazy_database_chunk_write_object(struct lazy_database_ch
 			RELEASE(chunk);
 		});
 		
-		obj->_data = data->data + sizeof(struct lazy_object_id_s) * obj->_number_of_references;
+		obj->payload_data = data->data + sizeof(struct lazy_object_id_s) * obj->num_references;
         
-        obj->_id.oid = oid;
-        obj->_id.cid = chunk->cid;
+        obj->id.oid = oid;
+        obj->id.cid = chunk->cid;
         lz_retain(chunk->database);
-        obj->_db = chunk->database;
+        obj->database = chunk->database;
         
-		id = obj->_id;
+		id = obj->id;
     });
 	return id;
 }
