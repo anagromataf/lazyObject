@@ -29,22 +29,18 @@
 
 #include "lazy_base_impl.h"
 
-struct lazy_object_id_s {
-	uint32_t cid;
-	uint32_t oid;
-};
-
 struct lazy_object_s {
     LAZY_BASE_HEAD
 	
     // object persistence
-    struct lazy_object_id_s id;
+    object_id_t oid;
+	uuid_t cid;
 	int is_temp;
     lz_db database;
 	dispatch_semaphore_t write_lock;
     
     // references to other objects
-    uint32_t num_references;
+    uint16_t num_references;
 	struct lazy_object_id_s * reference_ids;
 	struct lazy_object_s ** reference_objs;
     
@@ -58,7 +54,8 @@ struct lazy_object_s {
 #pragma mark Unmarshal Object
 
 lz_obj lz_obj_unmarshal(lz_db db,
-                        struct lazy_object_id_s id,
+                        object_id_t oid,
+						uuid_t cid,
 						void * data,
 						uint32_t length,
 						void(^dealloc)(),

@@ -66,3 +66,15 @@ int lz_rc(lz_base obj) {
     });
     return rc;
 }
+
+#pragma mark -
+#pragma mark Object ID
+
+int lazy_object_id_cmp(lz_obj_id a, lz_obj_id b) {
+	int result = a.oid - b.oid;
+	if (!result) {
+		result = a.cid - b.cid;
+	}
+	return result;
+}
+

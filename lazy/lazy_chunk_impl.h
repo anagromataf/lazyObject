@@ -1,8 +1,8 @@
 /*
- *  lazy_database_impl.h
+ *  lazy_chunk_impl.h
  *  lazyObject
  *
- *  Created by Tobias Kräntzer on 22.03.10.
+ *  Created by Tobias Kräntzer on 06.04.10.
  *  Copyright 2010 Fraunhofer Institut für Software- und Systemtechnik ISST.
  *
  *  This file is part of lazyObject.
@@ -21,42 +21,52 @@
  *	along with lazyObject.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _LAZY_DATABASE_IMPL_H_
-#define _LAZY_DATABASE_IMPL_H_
+#ifndef _LAZY_CHUNK_IMPL_H_
+#define _LAZY_CHUNK_IMPL_H_
 
-#include <lazy.h>
-
-#include <stdint.h>
-#include <sys/param.h>
-#include <dispatch/dispatch.h>
-
-#include "lazy_chunk_impl.h"
 #include "lazy_base_impl.h"
-#include "lazy_object_impl.h"
 
-#include "uthash.h"
+#include <stdio.h>
+#include <sys/param.h>
+#include <uuid/uuid.h>
 
-struct lazy_chunk_table_s {
-	uuid_t cid;
-	struct lazy_chunk_s * chunk;
-	UT_hash_handle hh;
-};
+#define CHUNK_FULL -1
 
-struct lazy_database_s {
-    LAZY_BASE_HEAD
-    
-    int version;
-    char filename[MAXPATHLEN];
+struct lazy_chunk_s {
+	LAZY_BASE_HEAD;
 	
-	struct lazy_chunk_s * chunk;
-	dispatch_semaphore_t chunk_lock;
-	struct lazy_chunk_table_s * chunk_table;
+	int is_read_only;
+	int flushed;
+	
+	uuid_t cid;
+	
+	FILE * file;
+	void * file_data;
+	int file_size;
+	
+	lz_db database;
+	
+	// index
+	uint32_t * index;
+	int index_length;
+	int index_end;
+	
+	// data
+	void * data;
+	int data_size;
 };
 
 #pragma mark -
-#pragma mark Read & Write Objects
+#pragma mark Chunk Lifecycle
 
-lz_obj lazy_database_read_object(lz_db db, struct lazy_object_id_s id);
-void lazy_database_write_object(lz_db db, lz_obj obj);
+struct lazy_chunk_s * lazy_chunk_open(lz_db db, uuid_t cid);
+struct lazy_chunk_s * lazy_chunk_create(lz_db db);
 
-#endif // _LAZY_DATABASE_IMPL_H_
+#pragma mark -
+#pragma mark Read & Write
+
+lz_obj lazy_chunk_read(struct lazy_chunk_s * chunk, object_id_t oid);
+int lazy_chunk_write(struct lazy_chunk_s * chunk, lz_obj obj);
+void lazy_chunk_flush(struct lazy_chunk_s * chunk);
+
+#endif // _LAZY_CHUNK_IMPL_H_

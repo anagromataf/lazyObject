@@ -24,7 +24,7 @@
 #include "lazy_database_impl.h"
 #include "lazy_root_impl.h"
 #include "lazy_object_dispatch_group.h"
-#include "lazy_database_chunk_impl.h"
+#include "lazy_chunk_impl.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,6 +39,7 @@
 // OS X only
 #include <CommonCrypto/CommonDigest.h>
 
+struct lazy_chunk_s * lazy_database_get_chunk(lz_db db, uuid_t cid);
 
 #pragma mark -
 #pragma mark Database Livecycle
@@ -118,10 +119,21 @@ lz_db lz_db_open(const char * path) {
     if (db) {
         LAZY_BASE_INIT(db, ^{
             RELEASE(db->chunk);
+			dispatch_release(db->chunk_lock);
+			
+			struct lazy_chunk_table_s * current_chunk;
+			while(db->chunk_table) {
+				current_chunk = db->chunk_table;
+				HASH_DEL(db->chunk_table, current_chunk);
+				free(current_chunk);
+			}
         });
         db->version = version;
         strcpy(db->filename, path);
-		db->chunk = lazy_database_chunk_open(db, 1, CHUNK_RW);
+		
+		db->chunk = lazy_chunk_create(db);
+		db->chunk_lock = dispatch_semaphore_create(1);
+		db->chunk_table = 0;
         DBG("<%i> New database handle created.", db);
     } else {
         ERR("Could not allocate memory to create a new database handle.");
@@ -141,24 +153,39 @@ int lz_db_version(lz_db db) {
 
 lz_obj lazy_database_read_object(lz_db db,
 								 struct lazy_object_id_s id) {
-	assert(id.cid == 1);
-	lz_obj obj = lazy_database_chunk_read_object(db->chunk, id);
-	return obj;
+	struct lazy_chunk_s * chunk = lazy_database_get_chunk(db, id.cid);
+	if (chunk) {
+		lz_obj obj = lazy_chunk_read(chunk, id.oid);
+		RELEASE(chunk);
+		return obj;
+	} else {
+		return 0;
+	}
 }
 
-struct lazy_object_id_s lazy_database_write_object(lz_db db,
-												   lz_obj obj) {
+void lazy_database_write_object(lz_db db,
+							   lz_obj obj) {
 	dispatch_semaphore_wait(obj->write_lock, DISPATCH_TIME_FOREVER);
 	if (obj->is_temp) {
-		dispatch_apply(obj->num_references, dispatch_get_global_queue(0, 0), ^(size_t i){
-			if ((obj->reference_ids[i].cid) == 0) {
-				obj->reference_ids[i] = lazy_database_write_object(db, obj->reference_objs[i]);
-			}
-		});
-		obj->id = lazy_database_chunk_write_object(db->chunk, obj);
+		
+		// OPTIMIZE: Run parallel
+		for (int i = 0; i < obj->num_references; i++) {
+			lazy_database_write_object(db, obj->reference_objs[i]);
+			obj->reference_ids[i].oid = obj->reference_objs[i]->oid;
+			uuid_copy(obj->reference_ids[i].cid, obj->reference_objs[i]->cid);
+		}
+		
+		dispatch_semaphore_wait(db->chunk_lock, DISPATCH_TIME_FOREVER);
+		// TODO: Handle error
+		if (lazy_chunk_write(db->chunk, obj)) {
+			lazy_chunk_flush(db->chunk);
+			RELEASE(db->chunk);
+			db->chunk = lazy_chunk_create(db);
+			assert(lazy_chunk_write(db->chunk, obj) == 0);
+		}
+		dispatch_semaphore_signal(db->chunk_lock);
 	}
 	dispatch_semaphore_signal(obj->write_lock);
-	return obj->id;
 }
 
 #pragma mark -
@@ -219,5 +246,39 @@ lz_root lz_db_root(lz_db db, const char * name) {
     }
     return root;
 }
+
+#pragma mark -
+#pragma mark Chunk Handling
+
+struct lazy_chunk_s * lazy_database_get_chunk(lz_db db, uuid_t cid) {
+	uuid_string_t cids;
+	uuid_unparse(cid, cids);
+	DBG("Try to get chunk %s.", cids);
+	struct lazy_chunk_s * chunk = 0;
+	dispatch_semaphore_wait(db->chunk_lock, DISPATCH_TIME_FOREVER);
+	if (uuid_compare(db->chunk->cid, cid) == 0) {
+		RETAIN(db->chunk);
+		chunk = db->chunk;
+	} else {
+		struct lazy_chunk_table_s * ct;
+		HASH_FIND(hh, db->chunk_table, cid, sizeof(uuid_t), ct);
+		if (ct) {
+			chunk = ct->chunk;
+			RETAIN(chunk);
+		} else {
+			chunk = lazy_chunk_open(db, cid);
+			if (chunk) {
+				ct = malloc(sizeof(struct lazy_chunk_table_s));
+				uuid_copy(ct->cid, cid);
+				ct->chunk = chunk;
+				HASH_ADD(hh, db->chunk_table, cid, sizeof(uuid_t), ct);
+				RETAIN(chunk);
+			}
+		}
+	}
+	dispatch_semaphore_signal(db->chunk_lock);
+	return chunk;
+}
+
 
 

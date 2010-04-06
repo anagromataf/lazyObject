@@ -27,6 +27,8 @@
 #include <lazy.h>
 #include <dispatch/dispatch.h>
 #include <Block.h>
+#include <stdint.h>
+#include <uuid/uuid.h>
 
 #define RETAIN(obj) lz_retain((struct lazy_base_s *)obj)
 #define RELEASE(obj) lz_release((struct lazy_base_s *)obj)
@@ -42,5 +44,18 @@
 struct lazy_base_s {
     LAZY_BASE_HEAD
 };
+
+#pragma mark -
+#pragma mark Object ID
+
+typedef uint16_t object_id_t;
+
+typedef struct lazy_object_id_s {
+	uuid_t cid;
+	object_id_t oid;
+} lz_obj_id;
+
+int lazy_object_id_cmp(lz_obj_id a, lz_obj_id b);
+
 
 #endif // _LAZY_BASE_IMPL_H_

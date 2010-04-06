@@ -58,6 +58,8 @@ lz_obj lz_obj_new(void * data,
             free(obj->reference_ids);
             free(obj->reference_objs);
         });
+		uuid_clear(obj->cid);
+		obj->oid = 0;
         // set up references
         obj->num_references = num_ref;
         obj->reference_objs = calloc(num_ref, sizeof(struct lazy_object_s));
@@ -95,7 +97,8 @@ lz_obj lz_obj_new(void * data,
 #pragma mark Unmarshal Object
 
 lz_obj lz_obj_unmarshal(lz_db db,
-                        struct lazy_object_id_s id,
+                        object_id_t oid,
+						uuid_t cid,
 						void * data,
 						uint32_t length,
 						void(^dealloc)(),
@@ -129,7 +132,8 @@ lz_obj lz_obj_unmarshal(lz_db db,
 			memcpy(obj->reference_ids, refs, sizeof(struct lazy_object_id_s) * num_ref);
             obj->write_lock = dispatch_semaphore_create(1);
             obj->is_temp = 0;
-            obj->id = id;
+			obj->oid = oid;
+			uuid_copy(obj->cid, cid);
             obj->payload_length = length;
             obj->payload_data = data;
             obj->payload_dealloc = Block_copy(dealloc);

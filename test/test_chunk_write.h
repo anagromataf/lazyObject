@@ -27,48 +27,38 @@
 #include <check.h>
 #include <lazy.h>
 
-#include "lazy_database_chunk_impl.h"
+#include "lazy_database_impl.h"
+
 
 START_TEST (test_chunk_write) {
 
-	struct lazy_database_chunk_s * chunk;
+
+	lz_db db = lz_db_open("./tmp/test.db");
 	
-    lz_db db = lz_db_open("./tmp/test.db");
-    lz_obj objA = lz_obj_new("Foo", 4, ^{}, 0, 0);
-	lz_obj objB = lz_obj_new("Bar", 4, ^{}, 0, 0);
-    
-	chunk = db->chunk;
 	
-    struct lazy_object_id_s oidA = lazy_database_chunk_write_object(chunk, objA);
-	fail_unless(oidA.oid == 0);
+	lz_obj obj = lz_obj_new("Foo", 4, ^{}, 0);
 	
-	struct lazy_object_id_s oidB = lazy_database_chunk_write_object(chunk, objB);
-	fail_unless(oidB.oid == 1);
+	lazy_database_write_object(db, obj);
 	
-	lz_release(objA);
-	lz_release(objB);
+	lz_obj_id oid;
+	oid.oid	= obj->oid;
+	uuid_copy(oid.cid, obj->cid);
+	
+	lz_release(obj);
+	lz_wait_for_completion();
+	
+	obj = lazy_database_read_object(db, oid);
+	fail_if(obj == 0);
+	if (obj) {
+		lz_obj_sync(obj, ^(void * data, uint32_t size){
+			fail_unless(size == 4);
+			fail_unless(strcmp(data, "Foo") == 0);
+		});
+		lz_release(obj);
+	}
+	
 	lz_release(db);
-    lz_wait_for_completion();
-	
-	
-	db = lz_db_open("./tmp/test.db");
-    
-	chunk = db->chunk;
-	
-	objA = lazy_database_chunk_read_object(chunk, oidA);
-	lz_obj_sync(objA, ^(void * data, uint32_t size){
-        fail_unless(strcmp(data, "Foo") == 0);
-    });
-	
-	objB = lazy_database_chunk_read_object(chunk, oidB);
-	lz_obj_sync(objB, ^(void * data, uint32_t size){
-        fail_unless(strcmp(data, "Bar") == 0);
-    });
-    
-	lz_release(objA);
-	lz_release(objB);
-	lz_release(db);
-    lz_wait_for_completion();
+	lz_wait_for_completion();
 	
 } END_TEST
 

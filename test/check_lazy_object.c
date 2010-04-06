@@ -31,6 +31,7 @@
 #include "test_root_handle.h"
 #include "test_create_open_db.h"
 #include "test_chunk_write.h"
+#include "test_chunk_swapping.h"
 
 #pragma mark -
 #pragma mark Fixtures
@@ -59,6 +60,7 @@ Suite * lazy_object_suite(void) {
     tcase_add_test(tc_core, test_root_handle);
     tcase_add_test(tc_core, test_create_open_db);
     tcase_add_test(tc_core, test_chunk_write);
+	tcase_add_test(tc_core, test_chunk_swapping);
 	
     suite_add_tcase(s, tc_core);
     
