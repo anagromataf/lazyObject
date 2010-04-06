@@ -118,7 +118,7 @@ lz_root lz_db_root(lz_db db, const char * name);
 
 lz_obj lz_root_get(lz_root root);
 void lz_root_set(lz_root root, lz_obj obj);
-void lz_root_del(lz_root);
+void lz_root_del(lz_root root);
 
 #endif // _LAZY_H_
 

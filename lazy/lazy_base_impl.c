@@ -31,7 +31,7 @@
 
 void * lz_retain(lz_base obj) {
     if (obj.base) {
-        dispatch_group_async(*lazy_object_get_dispatch_group(), obj.base->queue, ^{
+        dispatch_group_async(lazy_object_get_dispatch_group(), obj.base->queue, ^{
             obj.base->rc++;
             DBG("<%i> Retain count increased.", obj);
         });
@@ -41,13 +41,13 @@ void * lz_retain(lz_base obj) {
 
 void * lz_release(lz_base obj) {
     if (obj.base) {
-        dispatch_group_async(*lazy_object_get_dispatch_group(), obj.base->queue, ^{
+        dispatch_group_async(lazy_object_get_dispatch_group(), obj.base->queue, ^{
             if (obj.base->rc > 1) {
                 obj.base->rc--;
                 DBG("<%d> Retain count decreased.", obj);
             } else {
                 DBG("<%i> Retain count reaches 0.", obj);
-                dispatch_group_async(*lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
+                dispatch_group_async(lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
                     obj.base->dealloc();
                     Block_release(obj.base->dealloc);
                     dispatch_release(obj.base->queue);

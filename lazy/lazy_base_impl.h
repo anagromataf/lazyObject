@@ -31,8 +31,13 @@
 #define RETAIN(obj) lz_retain((struct lazy_base_s *)obj)
 #define RELEASE(obj) lz_release((struct lazy_base_s *)obj)
 
-#define LAZY_BASE_HEAD dispatch_queue_t queue; int rc;void (^dealloc)();
-#define LAZY_BASE_INIT(obj, d) obj->queue = dispatch_queue_create(0, 0); obj->rc = 1; obj->dealloc = Block_copy(d);
+#define LAZY_BASE_HEAD dispatch_queue_t queue; \
+			           int rc; \
+                       void (^dealloc)();
+
+#define LAZY_BASE_INIT(obj, d) obj->queue = dispatch_queue_create(0, 0); \
+                               obj->rc = 1; \
+                               obj->dealloc = Block_copy(d);
 
 struct lazy_base_s {
     LAZY_BASE_HEAD

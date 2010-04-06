@@ -23,16 +23,16 @@
 
 #include "lazy_object_dispatch_group.h"
 
-dispatch_group_t * lazy_object_get_dispatch_group() {
+dispatch_group_t lazy_object_get_dispatch_group() {
     static dispatch_group_t group = 0;
     static dispatch_once_t predicate = 0;
     dispatch_once(&predicate, ^{
         group = dispatch_group_create();
     });
-    return (&group);
+    return (group);
 }
 
 void lz_wait_for_completion() {
-    dispatch_group_t group = * lazy_object_get_dispatch_group();
+    dispatch_group_t group = lazy_object_get_dispatch_group();
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 }

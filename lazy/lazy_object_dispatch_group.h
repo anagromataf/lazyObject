@@ -26,6 +26,6 @@
 
 #include <dispatch/dispatch.h>
 
-dispatch_group_t * lazy_object_get_dispatch_group();
+dispatch_group_t lazy_object_get_dispatch_group();
 
 #endif // _LAZY_OBJECT_DISPATCH_GROUP_IMPL_H_

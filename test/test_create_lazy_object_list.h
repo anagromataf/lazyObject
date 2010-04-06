@@ -24,8 +24,6 @@
 #ifndef _TEST_CREATE_LAZY_OBJECT_LIST_H_
 #define _TEST_CREATE_LAZY_OBJECT_LIST_H_
 
-#include "lazy_database_impl.h"
-
 #include <check.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -64,15 +62,6 @@ START_TEST (test_create_lazy_object_list) {
     lz_release(strB);
     lz_release(strC);
 	
-	lz_db db = lz_db_open("./tmp/test.db");
-	struct lazy_object_id_s oid = lazy_database_write_object(db, list);
-	lz_release(list);
-	lz_release(db);
-	lz_wait_for_completion();
-	
-	db = lz_db_open("./tmp/test.db");
-	list = lazy_database_read_object(db, oid);
-	
     lz_obj_sync(list, ^(void * data, uint32_t size){
         fail_unless(strcmp(data, text) == 0);
         
@@ -98,7 +87,6 @@ START_TEST (test_create_lazy_object_list) {
     });
     
     lz_release(list);
-    lz_release(db);
 	lz_wait_for_completion();
     
 } END_TEST

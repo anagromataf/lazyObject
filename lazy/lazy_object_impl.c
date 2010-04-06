@@ -196,7 +196,7 @@ void lz_obj_sync(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
 }
 
 void lz_obj_async(lz_obj obj, void(^handle)(void * data, uint32_t length)) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), obj->queue, ^{
+    dispatch_group_async(lazy_object_get_dispatch_group(), obj->queue, ^{
         DBG("<%i> Applying asynchronous 'payload function'.", obj);
         handle(obj->payload_data, obj->payload_length);
     });

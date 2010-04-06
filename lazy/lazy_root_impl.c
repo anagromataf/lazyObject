@@ -39,7 +39,7 @@ lz_obj lz_root_get(lz_root root) {
 }
 
 void lz_root_set(lz_root root, lz_obj obj) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), root->queue, ^{
+    dispatch_group_async(lazy_object_get_dispatch_group(), root->queue, ^{
         DBG("<%i> Set object <%i>", root, obj);
         if (!lz_obj_same(obj, root->root_obj)) {
             lz_release(root->root_obj);
@@ -49,7 +49,7 @@ void lz_root_set(lz_root root, lz_obj obj) {
 }
 
 void lz_root_del(lz_root root) {
-    dispatch_group_async(*lazy_object_get_dispatch_group(), root->queue, ^{
+    dispatch_group_async(lazy_object_get_dispatch_group(), root->queue, ^{
         lz_release(root->root_obj);
         root->root_obj = 0;
     }); 

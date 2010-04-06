@@ -40,7 +40,7 @@ void (^__lazy_object_logger)(int level, const char * msg, ...) = ^(int level, co
 
 void lz_set_logger(void (^log_handler)(int level, const char * msg, ...)) {
     if (__lazy_object_logger != 0) {
-        _Block_release(__lazy_object_logger);
+        Block_release(__lazy_object_logger);
     }
     __lazy_object_logger = Block_copy(log_handler);
     DBG("New logger set.");
