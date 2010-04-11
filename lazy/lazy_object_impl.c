@@ -29,42 +29,50 @@
 #include <stdarg.h>
 #include <string.h>
 #include <Block.h>
+#include <assert.h>
 
 #pragma mark -
 #pragma mark Object Livecycle
 
 lz_obj lz_obj_new(void * data,
-				  uint32_t length,
-				  void(^dealloc)(),
-				  uint16_t num_ref, ...) {
+                  uint32_t length,
+                  void(^dealloc)(),
+                  uint16_t num_ref, ...) {
     struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
     if (obj) {
         LAZY_BASE_INIT(obj, ^{
+            
             // release references
-            DBG("<%i> Releasing %i references.", obj, obj->num_references);
-            int loop;
-            for (loop=0; loop < obj->num_references; loop++) {
-                DBG("<%i> Releasing reference to <%i>.", obj, obj->reference_objs[loop]);
+            VERBOSE("<%i> Releasing %i references.", obj, obj->num_references);
+            for (int loop=0; loop < obj->num_references; loop++) {
+                VERBOSE("<%i> Releasing reference to <%i>.", obj, obj->reference_objs[loop]);
                 lz_release(obj->reference_objs[loop]);
             }
-            DBG("<%i> References released.", obj);
+            VERBOSE("<%i> References released.", obj);
             
-            DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
+            VERBOSE("<%i> Releasing reference to database <%i>.", obj, obj->database);
             lz_release(obj->database);
             
             dispatch_release(obj->write_lock);
             obj->payload_dealloc();
             Block_release(obj->payload_dealloc);
-            free(obj->reference_ids);
-            free(obj->reference_objs);
+            if (obj->num_references > 0) {
+                free(obj->reference_ids);
+                free(obj->reference_objs);
+            }
         });
-		uuid_clear(obj->cid);
-		obj->oid = 0;
+        
+        obj->oid = 0;
         // set up references
+        
         obj->num_references = num_ref;
-        obj->reference_objs = calloc(num_ref, sizeof(struct lazy_object_s));
-		obj->reference_ids = calloc(num_ref, sizeof(struct lazy_object_id_s));
-        if (obj->reference_objs && obj->reference_ids) {
+        if (num_ref > 0) {
+            obj->reference_objs = calloc(num_ref, sizeof(lz_obj));
+            obj->reference_ids = calloc(num_ref, sizeof(object_id_t));
+            assert(obj->reference_objs);
+            assert(obj->reference_ids);
+            
+            // copy references
             va_list refs;
             va_start(refs, num_ref);
             int loop;
@@ -73,20 +81,18 @@ lz_obj lz_obj_new(void * data,
                 obj->reference_objs[loop] = lz_retain(ref);
             }
             va_end(refs);
-            obj->write_lock = dispatch_semaphore_create(1);
-            obj->is_temp = 1;
-            obj->payload_length = length;
-            obj->payload_data = data;
-            obj->payload_dealloc = Block_copy(dealloc);
-            obj->database = 0;
-            DBG("<%i> New object created.", obj);
-        } else {
-			free(obj->reference_ids);
-			free(obj->reference_objs);
-            free(obj);
-            obj = 0;
-            dealloc();
         }
+        
+        // set payload
+        obj->payload_length = length;
+        obj->payload_data = data;
+        obj->payload_dealloc = Block_copy(dealloc);
+            
+        obj->write_lock = dispatch_semaphore_create(1);
+        obj->is_temp = 1;
+        obj->database = 0;
+            
+        DBG("<%i> New object created.", obj);
     } else {
         ERR("Could not allocate memory to create a new object.");
     }
@@ -98,54 +104,62 @@ lz_obj lz_obj_new(void * data,
 
 lz_obj lz_obj_unmarshal(lz_db db,
                         object_id_t oid,
-						uuid_t cid,
-						void * data,
-						uint32_t length,
-						void(^dealloc)(),
-						uint16_t num_ref, struct lazy_object_id_s * refs) {
-	struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
+                        void * data,
+                        uint32_t length,
+                        void(^dealloc)(),
+                        uint16_t num_ref,
+                        object_id_t * refs) {
+    struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
     if (obj) {
         LAZY_BASE_INIT(obj, ^{
+            
             // release references
-            DBG("<%i> Releasing %i references.", obj, obj->num_references);
+            VERBOSE("<%i> Releasing %i references.", obj, obj->num_references);
             int loop;
             for (loop=0; loop < obj->num_references; loop++) {
-                DBG("<%i> Releasing reference to <%i>.", obj, obj->reference_objs[loop]);
+                VERBOSE("<%i> Releasing reference to <%i>.", obj, obj->reference_objs[loop]);
                 lz_release(obj->reference_objs[loop]);
             }
-            DBG("<%i> References released.", obj);
+            VERBOSE("<%i> References released.", obj);
             
-            DBG("<%i> Releasing reference to database <%i>.", obj, obj->database);
+            VERBOSE("<%i> Releasing reference to database <%i>.", obj, obj->database);
             lz_release(obj->database);
             
             dispatch_release(obj->write_lock);
             obj->payload_dealloc();
             Block_release(obj->payload_dealloc);
-            free(obj->reference_ids);
-            free(obj->reference_objs);
+            if (obj->num_references > 0) {
+                free(obj->reference_ids);
+                free(obj->reference_objs);
+            }
         });
+        
         // set up references
         obj->num_references = num_ref;
-        obj->reference_objs = calloc(num_ref, sizeof(struct lazy_object_s));
-		obj->reference_ids = calloc(num_ref, sizeof(struct lazy_object_id_s));
-        if (obj->reference_objs && obj->reference_ids) {
-			memcpy(obj->reference_ids, refs, sizeof(struct lazy_object_id_s) * num_ref);
-            obj->write_lock = dispatch_semaphore_create(1);
-            obj->is_temp = 0;
-			obj->oid = oid;
-			uuid_copy(obj->cid, cid);
-            obj->payload_length = length;
-            obj->payload_data = data;
-            obj->payload_dealloc = Block_copy(dealloc);
-            obj->database = lz_retain(db);
-            DBG("<%i> New object created.", obj);
-        } else {
-			free(obj->reference_ids);
-			free(obj->reference_objs);
-            free(obj);
-            obj = 0;
-            dealloc();
+        if (num_ref > 0) {
+            obj->reference_objs = calloc(num_ref, sizeof(lz_obj));
+            obj->reference_ids = calloc(num_ref, sizeof(object_id_t));
+            assert(obj->reference_objs);
+            assert(obj->reference_ids);
+            memcpy(obj->reference_ids, refs, sizeof(object_id_t) * num_ref);
         }
+        
+            
+        obj->is_temp = 0;
+        obj->oid = oid;
+        
+        obj->write_lock = dispatch_semaphore_create(1);
+            
+        // set payload
+        obj->payload_length = length;
+        obj->payload_data = data;
+        obj->payload_dealloc = Block_copy(dealloc);
+            
+        // set database
+        obj->database = lz_retain(db);
+        
+        DBG("<%i> New object created.", obj);
+        
     } else {
         ERR("Could not allocate memory to create a new object.");
     }

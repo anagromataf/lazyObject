@@ -27,20 +27,13 @@
 #include <lazy.h>
 
 #include <stdint.h>
+#include <stdio.h>
 #include <sys/param.h>
 #include <dispatch/dispatch.h>
 
-#include "lazy_chunk_impl.h"
 #include "lazy_base_impl.h"
 #include "lazy_object_impl.h"
 
-#include "uthash.h"
-
-struct lazy_chunk_table_s {
-	uuid_t cid;
-	struct lazy_chunk_s * chunk;
-	UT_hash_handle hh;
-};
 
 struct lazy_database_s {
     LAZY_BASE_HEAD
@@ -48,15 +41,16 @@ struct lazy_database_s {
     int version;
     char filename[MAXPATHLEN];
 	
-	struct lazy_chunk_s * chunk;
-	dispatch_semaphore_t chunk_lock;
-	struct lazy_chunk_table_s * chunk_table;
+    FILE * write_file;
+    FILE * read_file;
+    dispatch_queue_t write_queue;
+    dispatch_queue_t read_queue;
 };
 
 #pragma mark -
 #pragma mark Read & Write Objects
 
-lz_obj lazy_database_read_object(lz_db db, struct lazy_object_id_s id);
-void lazy_database_write_object(lz_db db, lz_obj obj);
+lz_obj lazy_database_read_object(lz_db db, object_id_t);
+object_id_t lazy_database_write_object(lz_db db, lz_obj obj);
 
 #endif // _LAZY_DATABASE_IMPL_H_

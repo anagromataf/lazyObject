@@ -35,12 +35,10 @@
 
 struct lazy_root_s {
     LAZY_BASE_HEAD
-
-	char filename[MAXPATHLEN];
-	
-	int _exsits;
-	struct lazy_object_id_s root_obj_id;
-	
+    
+    char filename[MAXPATHLEN];
+    int _exsits;
+    object_id_t root_obj_id;
     lz_db database;
     lz_obj root_obj;
 };

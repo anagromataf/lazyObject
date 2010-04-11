@@ -25,6 +25,7 @@
 #include "lazy_object_dispatch_group.h"
 
 #include <Block.h>
+#include <stdlib.h>
 
 #pragma mark -
 #pragma mark Memory Management
@@ -33,7 +34,7 @@ void * lz_retain(lz_base obj) {
     if (obj.base) {
         dispatch_group_async(lazy_object_get_dispatch_group(), obj.base->queue, ^{
             obj.base->rc++;
-            DBG("<%i> Retain count increased.", obj);
+            VERBOSE("<%i> Retain count increased.", obj);
         });
     }
     return obj.base;
@@ -44,14 +45,14 @@ void * lz_release(lz_base obj) {
         dispatch_group_async(lazy_object_get_dispatch_group(), obj.base->queue, ^{
             if (obj.base->rc > 1) {
                 obj.base->rc--;
-                DBG("<%d> Retain count decreased.", obj);
+                VERBOSE("<%d> Retain count decreased.", obj);
             } else {
-                DBG("<%i> Retain count reaches 0.", obj);
+                VERBOSE("<%i> Retain count reaches 0.", obj);
                 dispatch_group_async(lazy_object_get_dispatch_group(), dispatch_get_global_queue(0, 0), ^{
                     obj.base->dealloc();
                     Block_release(obj.base->dealloc);
                     dispatch_release(obj.base->queue);
-                    free(obj);
+                    free(obj.base);
                 });
             };
         });
@@ -60,21 +61,13 @@ void * lz_release(lz_base obj) {
 }
 
 int lz_rc(lz_base obj) {
-    __block int rc;
-    dispatch_sync(obj.base->queue, ^{
-        rc = obj.base->rc;
-    });
-    return rc;
-}
-
-#pragma mark -
-#pragma mark Object ID
-
-int lazy_object_id_cmp(lz_obj_id a, lz_obj_id b) {
-	int result = a.oid - b.oid;
-	if (!result) {
-		result = a.cid - b.cid;
+	if (obj.base) {
+		__block int rc;
+		dispatch_sync(obj.base->queue, ^{
+			rc = obj.base->rc;
+		});
+		return rc;
+	} else {
+		return 0;
 	}
-	return result;
 }
-

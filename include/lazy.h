@@ -42,6 +42,7 @@ typedef union {
 
 // TODO: Skip all DEBUG messages in the release build.
 
+#define VERBOSE(...) __lazy_object_logger(8, __VA_ARGS__)
 #define DBG(...) __lazy_object_logger(7, __VA_ARGS__)
 #define INFO(...) __lazy_object_logger(6, __VA_ARGS__)
 #define NOTICE(...) __lazy_object_logger(5, __VA_ARGS__)
@@ -80,7 +81,7 @@ lz_obj lz_obj_new(void * data,
                   uint16_t num_ref, ...);
 
 #pragma mark -
-#pragma mark Check Same Object
+#pragma mark Check if objects are the same
 
 int lz_obj_same(lz_obj obj1, lz_obj obj2);
 

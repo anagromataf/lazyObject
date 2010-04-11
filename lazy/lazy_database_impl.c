@@ -24,11 +24,11 @@
 #include "lazy_database_impl.h"
 #include "lazy_root_impl.h"
 #include "lazy_object_dispatch_group.h"
-#include "lazy_chunk_impl.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <assert.h>
@@ -39,8 +39,6 @@
 // OS X only
 #include <CommonCrypto/CommonDigest.h>
 
-struct lazy_chunk_s * lazy_database_get_chunk(lz_db db, uuid_t cid);
-
 #pragma mark -
 #pragma mark Database Livecycle
 
@@ -50,15 +48,15 @@ lz_db lz_db_open(const char * path) {
     char filename[MAXPATHLEN];
     int version;
     int exsits = 0;
-    FILE * fd;
+    FILE * version_fd;
     
     // read version
     snprintf(filename, MAXPATHLEN, "%s/version", path);
-    fd = fopen(filename, "r");
-    if (fd) {
+    version_fd = fopen(filename, "r");
+    if (version_fd) {
         exsits = 1;
-        fscanf(fd, "%d", &version);
-        fclose(fd);
+        fscanf(version_fd, "%d", &version);
+        fclose(version_fd);
         INFO("Database with version %d exsists.", version);
     } else {
         switch (errno) {
@@ -97,15 +95,7 @@ lz_db lz_db_open(const char * path) {
             return 0;
         }
         
-        // create chunks folder
-        snprintf(filename, MAXPATHLEN, "%s/chunks", path);
-        if (mkdir(filename, S_IRWXU)) {
-            strerror_r(errno, msg, 1024);
-            ERR("Could not create chunk folder for database '%s': %s", path, msg);
-            return 0;
-        }
-		
-		// create index folder
+        // create index folder
         snprintf(filename, MAXPATHLEN, "%s/index", path);
         if (mkdir(filename, S_IRWXU)) {
             strerror_r(errno, msg, 1024);
@@ -114,29 +104,37 @@ lz_db lz_db_open(const char * path) {
         }
     }
     
+    // open data file in append mode and
+    // set the file pointer to the begin of the file
+    snprintf(filename, MAXPATHLEN, "%s/data", path);
+    FILE * write_fd = fopen(filename, "a+");
+    assert(write_fd != NULL);
+    
+    FILE * read_fd = fopen(filename, "r");
+    assert(read_fd != NULL);
+    
     // create handle
     struct lazy_database_s * db = malloc(sizeof(struct lazy_database_s));
     if (db) {
         LAZY_BASE_INIT(db, ^{
-            RELEASE(db->chunk);
-			dispatch_release(db->chunk_lock);
-			
-			struct lazy_chunk_table_s * current_chunk;
-			while(db->chunk_table) {
-				current_chunk = db->chunk_table;
-				HASH_DEL(db->chunk_table, current_chunk);
-				free(current_chunk);
-			}
+            dispatch_release(db->write_queue);
+            dispatch_release(db->read_queue);
+            fclose(write_fd);
+            fclose(read_fd);
         });
         db->version = version;
         strcpy(db->filename, path);
-		
-		db->chunk = lazy_chunk_create(db);
-		db->chunk_lock = dispatch_semaphore_create(1);
-		db->chunk_table = 0;
+        
+        db->write_file = write_fd;
+        db->read_file = read_fd;
+        db->write_queue = dispatch_queue_create(NULL, NULL);
+        db->read_queue = dispatch_queue_create(NULL, NULL);
+        
         DBG("<%i> New database handle created.", db);
     } else {
         ERR("Could not allocate memory to create a new database handle.");
+        fclose(write_fd);
+        fclose(read_fd);
     }
     return db;
 }
@@ -152,59 +150,105 @@ int lz_db_version(lz_db db) {
 #pragma mark Read & Write Objects
 
 lz_obj lazy_database_read_object(lz_db db,
-								 struct lazy_object_id_s id) {
-	struct lazy_chunk_s * chunk = lazy_database_get_chunk(db, id.cid);
-	if (chunk) {
-		lz_obj obj = lazy_chunk_read(chunk, id.oid);
-		RELEASE(chunk);
-		return obj;
-	} else {
-		return 0;
-	}
+                                 object_id_t id) {
+    
+    int offset = 0;
+    
+    // get the number of references for this object
+    uint16_t num_ref;
+    assert(pread(fileno(db->read_file), &num_ref, sizeof(uint16_t), id + offset) == sizeof(uint16_t));
+    offset = sizeof(uint16_t);
+    
+    // read the size of the payload
+    uint32_t data_size;
+    assert(pread(fileno(db->read_file), &data_size, sizeof(uint32_t), id + offset) == sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    
+    // read the references from the file
+    object_id_t refs[num_ref];
+    if (num_ref > 0) {
+        int bytes_read = pread(fileno(db->read_file), &refs, sizeof(object_id_t) * num_ref, id + offset);
+        assert(bytes_read == sizeof(object_id_t) * num_ref);
+        assert(refs);
+        offset += sizeof(object_id_t) * num_ref;
+    }
+    
+    // allocate memory for the payload and read it from the file
+    void * data = malloc(data_size);
+    assert(data);
+    pread(fileno(db->read_file), data, data_size, id + offset);
+    
+    return lz_obj_unmarshal(db,
+                            id,
+                            data,
+                            data_size,
+                            ^{free(data);},
+                            num_ref, refs);
 }
 
-void lazy_database_write_object(lz_db db,
-							   lz_obj obj) {
-	dispatch_semaphore_wait(obj->write_lock, DISPATCH_TIME_FOREVER);
-	if (obj->is_temp) {
-		
-		// OPTIMIZE: Run parallel
-		for (int i = 0; i < obj->num_references; i++) {
-			lazy_database_write_object(db, obj->reference_objs[i]);
-			obj->reference_ids[i].oid = obj->reference_objs[i]->oid;
-			uuid_copy(obj->reference_ids[i].cid, obj->reference_objs[i]->cid);
-		}
-		
-		dispatch_semaphore_wait(db->chunk_lock, DISPATCH_TIME_FOREVER);
-		// TODO: Handle error
-		if (lazy_chunk_write(db->chunk, obj)) {
-			lazy_chunk_flush(db->chunk);
-			RELEASE(db->chunk);
-			db->chunk = lazy_chunk_create(db);
-			assert(lazy_chunk_write(db->chunk, obj) == 0);
-		}
-		dispatch_semaphore_signal(db->chunk_lock);
-	}
-	dispatch_semaphore_signal(obj->write_lock);
+object_id_t lazy_database_write_object(lz_db db,
+                                       lz_obj obj) {
+    __block object_id_t result;
+    dispatch_semaphore_wait(obj->write_lock, DISPATCH_TIME_FOREVER);
+    if (obj->is_temp) {
+        // OPTIMIZE: Run parallel
+        for (int i = 0; i < obj->num_references; i++) {
+            obj->reference_ids[i] = lazy_database_write_object(db, obj->reference_objs[i]);
+        }
+        dispatch_sync(db->write_queue, ^{
+            // get the position in the file as the object id
+            result = ftell(db->write_file);
+            
+            // write number of references
+            if (fwrite(&(obj->num_references), sizeof(uint16_t), 1, db->write_file) == 0) {
+                ERR("Could not write number of references to file.");
+                assert(0);
+            }
+            
+            // write payload length
+            if(fwrite(&(obj->payload_length), sizeof(uint32_t), 1, db->write_file) == 0) {
+                ERR("Could not write payload length to file.");
+                assert(0);
+            }
+            
+            // write references
+            if (obj->num_references > 0) {
+                if(fwrite(obj->reference_ids, sizeof(object_id_t), obj->num_references, db->write_file) == 0) {
+                    ERR("Could not write references to file.");
+                    assert(0);
+                }
+            }
+            
+            // write payload
+            if(fwrite(obj->payload_data, 1, obj->payload_length, db->write_file) == 0) {
+                ERR("Could not write payload to file.");
+                assert(0);
+            }
+            
+            obj->is_temp = 0;
+            fflush(db->write_file);
+        });
+    }
+    dispatch_semaphore_signal(obj->write_lock);
+    return result;
 }
 
 #pragma mark -
 #pragma mark Access Root Handle
 
 lz_root lz_db_root(lz_db db, const char * name) {
-	
-	unsigned char digest[CC_SHA1_DIGEST_LENGTH];
-	char digest_str[CC_SHA1_DIGEST_LENGTH * 2 + 1];
-	struct lazy_object_id_s root_id;
-	FILE * fd;
-	char msg[1024];
+    unsigned char digest[CC_SHA1_DIGEST_LENGTH];
+    char digest_str[CC_SHA1_DIGEST_LENGTH * 2 + 1];
+    object_id_t root_id;
+    FILE * fd;
+    char msg[1024];
     char filename[MAXPATHLEN];
-	int exsits = 0;
+    int exsits = 0;
 	
-	// sha1(name)
-	CC_SHA1(name, strlen(name), digest);
-	// OPTIMIZE: find a better way to convert the digest to a string
-	snprintf(digest_str,
+    // sha1(name)
+    CC_SHA1(name, strlen(name), digest);
+    // OPTIMIZE: find a better way to convert the digest to a string
+    snprintf(digest_str,
 			 CC_SHA1_DIGEST_LENGTH * 2 + 1,
 			 "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
 			 digest[0],digest[1],digest[2],digest[3],digest[4],digest[5],digest[6],digest[7],digest[8],digest[9],digest[10],digest[11],digest[12],digest[13],digest[14],digest[15],digest[16],digest[17],digest[18],digest[19]);
@@ -245,39 +289,6 @@ lz_root lz_db_root(lz_db db, const char * name) {
         ERR("Could not allocate memory to create a new root handle.");
     }
     return root;
-}
-
-#pragma mark -
-#pragma mark Chunk Handling
-
-struct lazy_chunk_s * lazy_database_get_chunk(lz_db db, uuid_t cid) {
-	uuid_string_t cids;
-	uuid_unparse(cid, cids);
-	DBG("Try to get chunk %s.", cids);
-	struct lazy_chunk_s * chunk = 0;
-	dispatch_semaphore_wait(db->chunk_lock, DISPATCH_TIME_FOREVER);
-	if (uuid_compare(db->chunk->cid, cid) == 0) {
-		RETAIN(db->chunk);
-		chunk = db->chunk;
-	} else {
-		struct lazy_chunk_table_s * ct;
-		HASH_FIND(hh, db->chunk_table, cid, sizeof(uuid_t), ct);
-		if (ct) {
-			chunk = ct->chunk;
-			RETAIN(chunk);
-		} else {
-			chunk = lazy_chunk_open(db, cid);
-			if (chunk) {
-				ct = malloc(sizeof(struct lazy_chunk_table_s));
-				uuid_copy(ct->cid, cid);
-				ct->chunk = chunk;
-				HASH_ADD(hh, db->chunk_table, cid, sizeof(uuid_t), ct);
-				RETAIN(chunk);
-			}
-		}
-	}
-	dispatch_semaphore_signal(db->chunk_lock);
-	return chunk;
 }
 
 

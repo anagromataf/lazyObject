@@ -31,49 +31,49 @@
 
 START_TEST (test_chunk_swapping) {
 	
-	int num_obj = 1000;
+	int num_obj = 100000;
 	
-	struct data_s {
-		uint64_t i;
-		char foo[1024 * 10];
-	} data;
-	
-	int size = sizeof(struct data_s);
+    struct data_s {
+        uint64_t i;
+        int8_t foo[1024];
+    };
     
-	lz_obj_id oids[num_obj]; 
-	
-	lz_db db = lz_db_open("./tmp/test.db");
-	
-	for (int loop = 0; loop < num_obj; loop++) {
-		data.i = loop;
-		lz_obj obj = lz_obj_new(&data, size, ^{}, 0);
-		lazy_database_write_object(db, obj);
-		oids[loop].oid	= obj->oid;
-		uuid_copy(oids[loop].cid, obj->cid);
-		lz_release(obj);
-	}
-	
-	lz_release(db);
-	lz_wait_for_completion();
-	
-	db = lz_db_open("./tmp/test.db");
-	
-	for (int loop = 0; loop < num_obj; loop++) {
-		lz_obj obj = lazy_database_read_object(db, oids[loop]);
-		fail_if(obj == 0);
-		if (obj) {
-			lz_obj_sync(obj, ^(void * d, uint32_t s){
-				struct data_s * data = d;
-				fail_unless(size == s);
-				fail_unless(data->i == loop);
-			});
-			lz_release(obj);
-		}
-	}
-	
-	lz_release(db);
-	lz_wait_for_completion();
-	
+    __block object_id_t * oids = calloc(sizeof(object_id_t), num_obj);
+    
+    lz_db db = lz_db_open("./tmp/test.db");
+    dispatch_apply(num_obj, dispatch_get_global_queue(0, 0), ^(size_t loop){
+        
+        struct data_s * data = malloc(sizeof(struct data_s));
+        fail_if(data == 0);
+        data->i = loop;
+        for (int i = 0; i < 1024; i++) {
+            data->foo[i] = -1;
+        }
+        lz_obj obj = lz_obj_new(data, sizeof(struct data_s), ^{
+            free(data);
+        }, 0);
+		 oids[loop] = lazy_database_write_object(db, obj);
+		 lz_release(obj);
+    });
+    lz_release(db);
+    lz_wait_for_completion();
+    
+    db = lz_db_open("./tmp/test.db");
+    dispatch_apply(num_obj, dispatch_get_global_queue(0, 0), ^(size_t loop){
+        lz_obj obj = lazy_database_read_object(db, oids[loop]);
+        fail_if(obj == 0);
+        if (obj) {
+            lz_obj_sync(obj, ^(void * d, uint32_t s){
+                fail_unless(sizeof(struct data_s) == s);
+                fail_unless(((struct data_s *)d)->i == loop);
+            });
+            lz_release(obj);
+        }
+    });
+    lz_release(db);
+    lz_wait_for_completion();
+    
+    free(oids);
 } END_TEST
 
 #endif // _TEST_CHUNK_SWAPPING_H_

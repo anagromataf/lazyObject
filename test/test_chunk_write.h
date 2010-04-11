@@ -32,17 +32,12 @@
 
 START_TEST (test_chunk_write) {
 
-
 	lz_db db = lz_db_open("./tmp/test.db");
 	
 	
 	lz_obj obj = lz_obj_new("Foo", 4, ^{}, 0);
 	
-	lazy_database_write_object(db, obj);
-	
-	lz_obj_id oid;
-	oid.oid	= obj->oid;
-	uuid_copy(oid.cid, obj->cid);
+	object_id_t oid = lazy_database_write_object(db, obj);
 	
 	lz_release(obj);
 	lz_wait_for_completion();
