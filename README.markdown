@@ -16,16 +16,16 @@ void * myData = malloc(length);
 // store a structure in this block
 
 // create the object handle
-lz_obj obj = lz_obj_new(myData, myLength, ^(void * data, uint32_t size){
-    free(data);
-}, 0, 0);
+lz_obj obj = lz_obj_new(myData, myLength, ^{
+    free(myData);
+}, 0);
 
 // use the object handle
 
 // release the reference if not needed anymore
 lz_release(obj);
 
-// if the retain count reaches 0, the custom block (free(data);) is called and
+// if the retain count reaches 0, the custom block (free(myData);) is called and
 // the object handle is deallocated
 </pre>
 
@@ -47,14 +47,14 @@ int dictLength = sizeof(struct dict_s) * 5;
 struct dict_s * dictData = malloc(dictLength);
 
 // set the position of the references in the structure
-dict[0].key = 0;
-dict[0].value = 5;
+dictData[0].key = 0;
+dictData[0].value = 5;
 
-dict[1].key = ...;
+dictData[1].key = ...;
 
 // create the object
-lz_obj dict = lz_obj_new(dictData, dictLength, ^(void * data, uint32_t size){
-    free(data);
+lz_obj dict = lz_obj_new(dictData, dictLength, ^{
+    free(dictData);
 }, 10, key1, key2, key3, key4, key5, value1, value2, value3, value4, value5);
 </pre>
 
@@ -66,8 +66,8 @@ __block lz_obj key, value;
 // get the key and value of the fourth element
 lz_obj_sync(dict, ^(void * data, uint32_t size){
     struct dict_s * d = data;
-    key = lz_obj_ref(dict, d[4].key);
-    value = lz_obj_ref(dict, d[4].value);
+    key = lz_obj_ref(dict, d[3].key);
+    value = lz_obj_ref(dict, d[3].value);
 });
 
 // use key and value
