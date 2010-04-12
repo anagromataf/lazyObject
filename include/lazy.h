@@ -117,9 +117,14 @@ lz_root lz_db_root(lz_db db, const char * name);
 #pragma mark -
 #pragma mark Root Objects
 
-lz_obj lz_root_get(lz_root root);
-void lz_root_set(lz_root root, lz_obj obj);
-void lz_root_del(lz_root root);
+void lz_root_get_sync(lz_root root, void(^result_handler)(lz_obj obj));
+void lz_root_get_async(lz_root root, void(^result_handler)(lz_obj obj));
+
+void lz_root_set_sync(lz_root root, lz_obj obj, void(^result_handler)());
+void lz_root_set_async(lz_root root, lz_obj obj, void(^result_handler)());
+
+void lz_root_del_sync(lz_root root, void(^result_handler)());
+void lz_root_del_async(lz_root root, void(^result_handler)());
 
 #endif // _LAZY_H_
 

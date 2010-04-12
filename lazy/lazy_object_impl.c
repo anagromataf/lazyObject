@@ -172,6 +172,8 @@ lz_obj lz_obj_unmarshal(lz_db db,
 int lz_obj_same(lz_obj obj1, lz_obj obj2) {
     if (obj1 == obj2) {
         return 1;
+    } else if (obj1 && obj1->is_temp == 0 && obj2 && obj2->is_temp == 0 && obj1->oid == obj2->oid) {
+        return 1;
     } else {
         return 0;
     }

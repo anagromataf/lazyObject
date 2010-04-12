@@ -192,12 +192,12 @@ object_id_t lazy_database_write_object(lz_db db,
     dispatch_semaphore_wait(obj->write_lock, DISPATCH_TIME_FOREVER);
     if (obj->is_temp) {
         // OPTIMIZE: Run parallel
-        for (int i = 0; i < obj->num_references; i++) {
+        dispatch_apply(obj->num_references, dispatch_get_global_queue(0, 0), ^(size_t i) {
             obj->reference_ids[i] = lazy_database_write_object(db, obj->reference_objs[i]);
-        }
+        });
         dispatch_sync(db->write_queue, ^{
             // get the position in the file as the object id
-            result = ftell(db->write_file);
+            object_id_t oid = ftell(db->write_file);
             
             // write number of references
             if (fwrite(&(obj->num_references), sizeof(uint16_t), 1, db->write_file) == 0) {
@@ -226,8 +226,12 @@ object_id_t lazy_database_write_object(lz_db db,
             }
             
             obj->is_temp = 0;
+            obj->oid = oid;
+            result = oid;
             fflush(db->write_file);
         });
+    } else {
+        result = obj->oid;
     }
     dispatch_semaphore_signal(obj->write_lock);
     return result;
@@ -240,6 +244,7 @@ lz_root lz_db_root(lz_db db, const char * name) {
     unsigned char digest[CC_SHA1_DIGEST_LENGTH];
     char digest_str[CC_SHA1_DIGEST_LENGTH * 2 + 1];
     object_id_t root_id;
+    int root_is_bound;
     FILE * fd;
     char msg[1024];
     char filename[MAXPATHLEN];
@@ -255,35 +260,44 @@ lz_root lz_db_root(lz_db db, const char * name) {
 	
     // read root obj
     snprintf(filename, MAXPATHLEN, "%s/index/%s", db->filename, digest_str);
-    fd = fopen(filename, "r+");
-    if (fd) {
-        exsits = 1;
-		assert(sizeof(root_id) == fread(&root_id, sizeof(root_id), sizeof(root_id), fd));
-		fclose(fd);
-    } else {
-        switch (errno) {
-            case ENOENT:
-                exsits = 0;
-                break;
-            default:
-                strerror_r(errno, msg, 1024);
-                ERR("Could not read root object '%s' (%s): %s", name, digest_str, msg);
-                return 0;
-        }
+    fd = fopen(filename, "a+");
+    if (!fd) {
+        strerror_r(errno, msg, 1024);
+        ERR("Could not read root object '%s' (%s): %s", name, digest_str, msg);
+        return 0;
     }
 	
+    // read last root object
+    if (ftell(fd) == 0) {
+        root_is_bound = 0;
+    } else {
+        fseek(fd, -1 * sizeof(object_id_t), SEEK_END);
+        int objects_read = fread(&root_id, sizeof(object_id_t), 1, fd);
+        assert(objects_read == 1);
+        
+        if (root_id == OBJECT_ID_UNKNOWN) {
+            root_is_bound = 0;
+        } else {
+            root_is_bound = 1;
+        }
+    }
+    
     struct lazy_root_s * root = malloc(sizeof(struct lazy_root_s));
     if (root) {
         LAZY_BASE_INIT(root, ^{
             lz_release(root->root_obj);
             lz_release(root->database);
+            fclose(root->file);
         });
 		strcpy(root->filename, filename);
-		root->_exsits = exsits;
+        root->file = fd;
+        
+        root->root_is_bound = root_is_bound;
 		root->root_obj_id = root_id;
-        lz_retain(db);
-        root->database = db;
+        
+        root->database = lz_retain(db);
         root->root_obj = 0;
+        
         DBG("<%i> New root handle created.", root);
     } else {
         ERR("Could not allocate memory to create a new root handle.");

@@ -30,6 +30,7 @@
 #include "lazy_base_impl.h"
 
 typedef uint64_t object_id_t;
+#define OBJECT_ID_UNKNOWN UINT64_MAX
 
 struct lazy_object_s {
 	LAZY_BASE_HEAD

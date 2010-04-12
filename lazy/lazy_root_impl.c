@@ -25,33 +25,93 @@
 #include "lazy_object_dispatch_group.h"
 
 #include <stdlib.h>
+#include <assert.h>
 
 #pragma mark -
 #pragma mark Root Objects
 
-lz_obj lz_root_get(lz_root root) {
-    __block lz_obj result;
-    dispatch_sync(root->queue, ^{
-        result = lz_retain(root->root_obj);
-        DBG("<%i> Get object <%i>", root, result);
-    });
-    return result;
+void _get(lz_root root, void(^handler)(lz_obj obj)) {
+    if (root->root_is_bound) {
+        if (root->root_obj) {
+            handler(lz_retain(root->root_obj));
+        } else {
+            root->root_obj = lazy_database_read_object(root->database, root->root_obj_id);
+            handler(lz_retain(root->root_obj));
+        }
+    } else {
+        handler(0);
+    }
+    Block_release(handler);
 }
 
-void lz_root_set(lz_root root, lz_obj obj) {
+void lz_root_get_sync(lz_root root, void(^result_handler)(lz_obj)) {
+    void(^handler)(lz_obj) = Block_copy(result_handler);
+    dispatch_sync(root->queue, ^{
+        _get(root, handler);
+    });
+}
+
+void lz_root_get_async(lz_root root, void(^result_handler)(lz_obj)) {
+    void(^handler)(lz_obj) = Block_copy(result_handler);
     dispatch_group_async(lazy_object_get_dispatch_group(), root->queue, ^{
-        DBG("<%i> Set object <%i>", root, obj);
-        if (!lz_obj_same(obj, root->root_obj)) {
-            lz_release(root->root_obj);
-            root->root_obj = lz_retain(obj);;
-        }
+        _get(root, handler);
+    });
+}
+
+void _set(lz_root root, lz_obj obj, void(^handler)()) {
+    if (!lz_obj_same(obj, root->root_obj)) {
+        lz_release(root->root_obj);
+        
+        root->root_obj = lz_retain(obj);
+        root->root_obj_id = lazy_database_write_object(root->database, obj);
+        root->root_is_bound = 1;
+        int objects_written = fwrite(&(root->root_obj_id), sizeof(object_id_t), 1, root->file);
+        assert(objects_written == 1);
+        fflush(root->file);
+    }
+    handler();
+    Block_release(handler);
+}
+
+void lz_root_set_sync(lz_root root, lz_obj obj, void(^result_handler)()) {
+    void(^handler)() = Block_copy(result_handler);
+    dispatch_sync(root->queue, ^{
+        _set(root, obj, handler);
+    });   
+}
+
+void lz_root_set_async(lz_root root, lz_obj obj, void(^result_handler)()) {
+    void(^handler)() = Block_copy(result_handler);
+    dispatch_group_async(lazy_object_get_dispatch_group(), root->queue, ^{
+        _set(root, obj, handler);
     });    
 }
 
-void lz_root_del(lz_root root) {
-    dispatch_group_async(lazy_object_get_dispatch_group(), root->queue, ^{
+void _del(lz_root root, void(^handler)()) {
+    if (root->root_is_bound) {
         lz_release(root->root_obj);
         root->root_obj = 0;
+        root->root_is_bound = 0;
+        object_id_t o = OBJECT_ID_UNKNOWN;
+        int objects_written = fwrite(&o, sizeof(object_id_t), 1, root->file);
+        assert(objects_written == 1);
+        fflush(root->file);
+    }
+    handler();
+    Block_release(handler);
+}
+
+void lz_root_del_sync(lz_root root, void(^result_handler)()) {
+    void(^handler)() = Block_copy(result_handler);
+    dispatch_sync(root->queue, ^{
+        _del(root, handler);
+    }); 
+}
+
+void lz_root_del_async(lz_root root, void(^result_handler)()) {
+    void(^handler)() = Block_copy(result_handler);
+    dispatch_group_async(lazy_object_get_dispatch_group(), root->queue, ^{
+        _del(root, handler);
     }); 
 }
 

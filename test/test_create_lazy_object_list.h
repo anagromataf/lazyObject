@@ -54,14 +54,30 @@ START_TEST (test_create_lazy_object_list) {
     
     char * text = "Eine Liste mit A, B und C!";
     
-    lz_obj list = lz_obj_new(text, strlen(text) + 1, ^{}, 3, strA, strB, strC);
+    __block lz_obj list = lz_obj_new(text, strlen(text) + 1, ^{}, 3, strA, strB, strC);
     
     fail_if(list == 0);
     
     lz_release(strA);
     lz_release(strB);
     lz_release(strC);
-	
+    
+    lz_db db = lz_db_open("./tmp/test.db");
+    lz_root root = lz_db_root(db, "list");
+    lz_root_set_sync(root, list, ^{});
+    lz_release(list);
+    
+    lz_release(root);
+    lz_release(db);
+    
+    lz_wait_for_completion();
+    
+    db = lz_db_open("./tmp/test.db");
+    root = lz_db_root(db, "list");
+    lz_root_get_sync(root, ^(lz_obj obj){
+        list = obj;
+    });
+    
     lz_obj_sync(list, ^(void * data, uint32_t size){
         fail_unless(strcmp(data, text) == 0);
         
@@ -86,6 +102,8 @@ START_TEST (test_create_lazy_object_list) {
         }
     });
     
+    lz_release(root);
+    lz_release(db);
     lz_release(list);
 	lz_wait_for_completion();
     

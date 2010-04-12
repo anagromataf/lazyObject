@@ -26,6 +26,7 @@
 
 #include <lazy.h>
 
+#include <stdio.h>
 #include <sys/param.h>
 #include <dispatch/dispatch.h>
 
@@ -37,7 +38,8 @@ struct lazy_root_s {
     LAZY_BASE_HEAD
     
     char filename[MAXPATHLEN];
-    int _exsits;
+    FILE * file;
+    int root_is_bound;
     object_id_t root_obj_id;
     lz_db database;
     lz_obj root_obj;

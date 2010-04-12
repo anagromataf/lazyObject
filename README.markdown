@@ -4,7 +4,9 @@ Lazy Object is a persistence layer for objects in C. It makes heavy use of [Gran
 
 ## Objects and References
 
-A lazy object (*lz_obj*) is a reference counted handle for a block of bytes, which furthermore can contain references to other lazy objects. The structure of this block and how the references are used is up to the application and does not affect the behavior of this library.
+A lazy object (*lz_obj*) is a reference counted handle for a block of bytes (payload), which furthermore can contain references to other lazy objects. The structure of this block and how the references are used is up to the application and does not affect the behavior of this library.
+
+![Example of an graph with lazy objects](doc/images/object_graph.png "Example of an graph with lazy objects")
 
 Each object is created with a pointer to the data, its length and a block which is responsible for deallocating the data and optionally with a list of references to other objects.
 
@@ -14,6 +16,7 @@ int myLength = 1024;
 void * myData = malloc(length);
 
 // store a structure in this block
+myData = ...
 
 // create the object handle
 lz_obj obj = lz_obj_new(myData, myLength, ^{
@@ -21,6 +24,7 @@ lz_obj obj = lz_obj_new(myData, myLength, ^{
 }, 0);
 
 // use the object handle
+foo(obj);
 
 // release the reference if not needed anymore
 lz_release(obj);
@@ -58,7 +62,7 @@ lz_obj dict = lz_obj_new(dictData, dictLength, ^{
 }, 10, key1, key2, key3, key4, key5, value1, value2, value3, value4, value5);
 </pre>
 
-Now we created a small object graph with an object referring to 10 other objects. To access the content of the newly created dictionary, we have to call either `lz_obj_sync()` or `lz_obj_async()`. Using this function to access the content of the objects assures that the library is aware of each access to the private data.
+Now we created a small object graph with an object referring to 10 other objects. To access the content of the newly created dictionary, we have to call either `lz_obj_sync()` or `lz_obj_async()`. Using this function to access the content of the objects assures that the library is aware of each access to the payload.
 
 <pre>
 __block lz_obj key, value;
@@ -94,19 +98,26 @@ lz_root root = lz_db_root(db, "dict");
 
 // store our previous created dictionary object under the
 // name 'dict' in the database
-lz_root_set(root, dict);
+lz_root_set_sync(root, dict, ^{
+    // handler is called after the objects are stored in the file system
+});
 </pre>
 
-As soon as the function `lz_root_set()` is called, the whole object graph is traversed and each object which has not already been stored in the file system is saved. At the end, a pointer with the label of the root object (in our case *dict*) is set to the object passed in this function.
+![Illustration of a root handle](doc/images/root_object.png "Illustration of a root handle")
 
-If we need the dictionary (e.g., after a restart of the application), we can call the function `lz_root_get()` on the appropriate handle.
+As soon as the function `lz_root_set_sync()` is called, the whole object graph is traversed and each object which has not already been stored in the file system is saved. At the end, a pointer with the label of the root object (in our case *dict*) is set to the object passed in this function.
+
+If we need the dictionary (e.g., after a restart of the application), we can call the function `lz_root_get_sync()` on the appropriate handle.
 
 <pre>
 // open the database and create a root handle with the name 'dict'.
 lz_db db = lz_db_open("test.lazyObject");
-lz_root root = lz_db_root(db, "dict");
+lz_root root = lz_db_root_sync(db, "dict");
+__block lz_obj dict;
 
-lz_obj = lz_root_get(root);
+lz_root_get(root, ^(lz_obj obj){
+    dict = obj;
+});
 </pre>
 
 ## System Logging

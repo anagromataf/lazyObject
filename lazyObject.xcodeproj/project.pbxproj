@@ -63,6 +63,9 @@
 		F69BD6E01160A0BE0061ECD8 /* lazy_base_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lazy_base_impl.c; path = lazy/lazy_base_impl.c; sourceTree = "<group>"; };
 		F6A1E459115E25BE00A49EE8 /* test_create_open_db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_create_open_db.h; path = test/test_create_open_db.h; sourceTree = "<group>"; };
 		F6F90A20116B4B0200AEBA62 /* test_chunk_swapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_chunk_swapping.h; path = test/test_chunk_swapping.h; sourceTree = "<group>"; };
+		F6FE519D11734F990023A1E1 /* lazyObject.graffle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = lazyObject.graffle; path = doc/images/lazyObject.graffle; sourceTree = "<group>"; };
+		F6FE519E11734F990023A1E1 /* object_graph.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = object_graph.png; path = doc/images/object_graph.png; sourceTree = "<group>"; };
+		F6FE519F11734F990023A1E1 /* root_object.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = root_object.png; path = doc/images/root_object.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,11 +155,22 @@
 		F643B8F5115B81FB00832707 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F6FE519C11734F800023A1E1 /* Images */,
 				F643B8F6115B821000832707 /* AUTHORS */,
 				F643B8F7115B821000832707 /* COPYING */,
 				F643B8F8115B821000832707 /* README.markdown */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		F6FE519C11734F800023A1E1 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				F6FE519D11734F990023A1E1 /* lazyObject.graffle */,
+				F6FE519E11734F990023A1E1 /* object_graph.png */,
+				F6FE519F11734F990023A1E1 /* root_object.png */,
+			);
+			name = Images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
