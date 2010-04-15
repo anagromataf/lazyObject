@@ -99,6 +99,70 @@ lz_obj lz_obj_new(void * data,
     return obj;
 }
 
+// TODO: Use a "base" function for 'lz_obj_new()' and 'lz_obj_new_v()'
+
+lz_obj lz_obj_new_v(void * data,
+                    uint32_t length,
+                    void(^dealloc)(),
+                    uint16_t num_ref,
+                    struct lazy_object_s ** refs) {
+
+    struct lazy_object_s * obj = malloc(sizeof(struct lazy_object_s));
+    if (obj) {
+        LAZY_BASE_INIT(obj, ^{
+            
+            // release references
+            VERBOSE("<%i> Releasing %i references.", obj, obj->num_references);
+            for (int loop=0; loop < obj->num_references; loop++) {
+                VERBOSE("<%i> Releasing reference to <%i>.", obj, obj->reference_objs[loop]);
+                lz_release(obj->reference_objs[loop]);
+            }
+            VERBOSE("<%i> References released.", obj);
+            
+            VERBOSE("<%i> Releasing reference to database <%i>.", obj, obj->database);
+            lz_release(obj->database);
+            
+            dispatch_release(obj->write_lock);
+            obj->payload_dealloc();
+            Block_release(obj->payload_dealloc);
+            if (obj->num_references > 0) {
+                free(obj->reference_ids);
+                free(obj->reference_objs);
+            }
+        });
+        
+        obj->oid = 0;
+        // set up references
+        
+        obj->num_references = num_ref;
+        if (num_ref > 0) {
+            obj->reference_objs = calloc(num_ref, sizeof(lz_obj));
+            obj->reference_ids = calloc(num_ref, sizeof(object_id_t));
+            assert(obj->reference_objs);
+            assert(obj->reference_ids);
+            
+            // copy references
+            for (int loop = 0; loop < num_ref; loop++) {
+                obj->reference_objs[loop] = lz_retain(refs[loop]);
+            }
+        }
+        
+        // set payload
+        obj->payload_length = length;
+        obj->payload_data = data;
+        obj->payload_dealloc = Block_copy(dealloc);
+        
+        obj->write_lock = dispatch_semaphore_create(1);
+        obj->is_temp = 1;
+        obj->database = 0;
+        
+        DBG("<%i> New object created.", obj);
+    } else {
+        ERR("Could not allocate memory to create a new object.");
+    }
+    return obj;
+}
+
 #pragma mark -
 #pragma mark Unmarshal Object
 

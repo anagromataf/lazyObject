@@ -80,6 +80,12 @@ lz_obj lz_obj_new(void * data,
                   void(^dealloc)(),
                   uint16_t num_ref, ...);
 
+lz_obj lz_obj_new_v(void * data,
+                    uint32_t length,
+                    void(^dealloc)(),
+                    uint16_t num_ref,
+                    lz_obj * refs);
+
 #pragma mark -
 #pragma mark Check if objects are the same
 
