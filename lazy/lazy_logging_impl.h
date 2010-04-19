@@ -25,6 +25,17 @@
 #define _LAZY_LOGGING_IMPL_H_
 
 #include <lazy.h>
+#include <syslog.h>
+#include <stdio.h>
 
+#define VERBOSE(...) 
+#define DBG(...) // {printf(__VA_ARGS__); printf("\n");}
+#define INFO(...) syslog(LOG_INFO, __VA_ARGS__)
+#define NOTICE(...) syslog(LOG_NOTICE, __VA_ARGS__)
+#define WARNING(...) syslog(LOG_WARNING, __VA_ARGS__)
+#define ERR(...) syslog(LOG_ERR, __VA_ARGS__)
+#define CRIT(...) syslog(LOG_CRIT, __VA_ARGS__)
+#define ALERT(...) syslog(LOG_ALERT, __VA_ARGS__)
+#define EMERG(...) syslog(LOG_EMERG, __VA_ARGS__)
 
 #endif // _LAZY_LOGGING_IMPL_H_

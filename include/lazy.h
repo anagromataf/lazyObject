@@ -38,28 +38,6 @@ typedef union {
 } lz_base __attribute__((transparent_union));
 
 #pragma mark -
-#pragma mark Logging
-
-// TODO: Skip all DEBUG messages in the release build.
-
-#define VERBOSE(...) __lazy_object_logger(8, __VA_ARGS__)
-#define DBG(...) __lazy_object_logger(7, __VA_ARGS__)
-#define INFO(...) __lazy_object_logger(6, __VA_ARGS__)
-#define NOTICE(...) __lazy_object_logger(5, __VA_ARGS__)
-#define WARNING(...) __lazy_object_logger(4, __VA_ARGS__)
-#define ERR(...) __lazy_object_logger(3, __VA_ARGS__)
-#define CRIT(...) __lazy_object_logger(2, __VA_ARGS__)
-#define ALERT(...) __lazy_object_logger(1, __VA_ARGS__)
-#define EMERG(...) __lazy_object_logger(0, __VA_ARGS__)
-
-#pragma mark -
-#pragma mark Log Handler
-
-extern void (^__lazy_object_logger)(int level, const char * msg, ...);
-
-void lz_set_logger(void (^)(int level, const char * msg, ...));
-
-#pragma mark -
 #pragma mark Work Scheduling
 
 void lz_wait_for_completion();

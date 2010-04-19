@@ -23,25 +23,5 @@
 
 #include "lazy_logging_impl.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <Block.h>
-
 #pragma mark -
 #pragma mark Log Handler
-
-void (^__lazy_object_logger)(int level, const char * msg, ...) = ^(int level, const char * msg, ...){
-    va_list args;
-    va_start(args, msg);
-    vfprintf(stderr, msg, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-};
-
-void lz_set_logger(void (^log_handler)(int level, const char * msg, ...)) {
-    if (__lazy_object_logger != 0) {
-        Block_release(__lazy_object_logger);
-    }
-    __lazy_object_logger = Block_copy(log_handler);
-    DBG("New logger set.");
-}

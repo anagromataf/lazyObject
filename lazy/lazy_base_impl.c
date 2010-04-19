@@ -22,6 +22,7 @@
  */
 
 #include "lazy_base_impl.h"
+#include "lazy_logging_impl.h"
 #include "lazy_object_dispatch_group.h"
 
 #include <Block.h>

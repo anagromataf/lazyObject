@@ -31,7 +31,7 @@
 
 START_TEST (test_chunk_swapping) {
 	
-	int num_obj = 100000;
+	int num_obj = 10000;
 	
     struct data_s {
         uint64_t i;

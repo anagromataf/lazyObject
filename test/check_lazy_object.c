@@ -24,6 +24,7 @@
 #include <check.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <syslog.h>
 
 #include "test_create_lazy_object.h"
 #include "test_create_lazy_object_list.h"
@@ -83,15 +84,7 @@ Suite * main_suite(void) {
 int main(int argc, char ** argv) {
     int number_failed;
     
-    lz_set_logger(^(int level, const char * msg, ...){
-        if (level < 7) {
-            va_list args;
-            va_start(args, msg);
-            vfprintf(stderr, msg, args);
-            fprintf(stderr, "\n");
-            va_end(args);
-        }
-    });
+    openlog("check lazy object", LOG_PERROR, LOG_USER);
     
     SRunner *sr = srunner_create(main_suite());
     srunner_set_fork_status(sr, CK_NOFORK);
